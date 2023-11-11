@@ -2,12 +2,15 @@
 import * as https from 'node:https';
 import * as fs from 'node:fs';
 
-import { event as onmail } from './modules/check_mail.mjs';
-const events = [onmail];
+import { event as file_watcher } from './modules/file_watcher.mjs';
+const onmail = file_watcher;
+const onraid = file_watcher;
+
+//Events list
+onmail({ path: '/var/mail' }, sendToMyTelegram);
+onraid({ path: '/proc/mdstat', timeout: 1800000 }, sendToMyTelegram);
 
 const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
-
-events.map((e) => e(sendToMyTelegram));
 
 function sendToMyTelegram(msg)
 {
