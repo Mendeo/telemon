@@ -3,12 +3,11 @@ import * as https from 'node:https';
 import * as fs from 'node:fs';
 
 import { event as file_watcher, tail } from './modules/file_watcher.mjs';
-const onmail = file_watcher;
-const onraid = file_watcher;
 
 //Events list
-onmail({ path: '/var/mail' }, sendToMyTelegram);
-onraid({ path: '/proc/mdstat', timeout: 1800000 }, sendToMyTelegram);
+file_watcher({ path: '/var/mail' }, sendToMyTelegram);
+file_watcher({ path: '/proc/mdstat', timeout: 1800000 }, sendToMyTelegram);
+file_watcher({ path: '/run/utmp', middleware: () => 'Is new login!' }, sendToMyTelegram);
 
 const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
 
