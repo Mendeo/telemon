@@ -17,7 +17,8 @@ export function event(callback)
 				if (fs.existsSync(fPath))
 				{
 					const fileData = fs.readFileSync(fPath).toString();
-					callback(fileData);
+					const msg = `File: ${filename}\n${fileData}`;
+					callback(msg);
 				}
 			}, 500);
 		}
