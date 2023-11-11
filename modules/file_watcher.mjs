@@ -19,7 +19,7 @@ export function event(input, callback)
 			tid = setTimeout(() =>
 			{
 				tid = null;
-				const fPath = path.join(input, filename);
+				const fPath = path.join(input.path, filename);
 				if (fs.existsSync(fPath))
 				{
 					const fileData = fs.readFileSync(fPath).toString();
