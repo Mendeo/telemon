@@ -2,7 +2,7 @@
 import * as https from 'node:https';
 import * as fs from 'node:fs';
 
-import { event as file_watcher } from './modules/file_watcher.mjs';
+import { event as file_watcher, tail } from './modules/file_watcher.mjs';
 const onmail = file_watcher;
 const onraid = file_watcher;
 
