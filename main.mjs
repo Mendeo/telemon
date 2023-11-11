@@ -1,27 +1,17 @@
 'use strict';
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const input = 'test';//process.argv[2];
+import * as https from 'node:https';
+import * as fs from 'node:fs';
 
-fs.watch(input, (eventType, filename)=>
-{
-	console.log(eventType);
-	setTimeout(() =>
-	{
-		const fPath = path.join(input, filename);
-		if (fs.existsSync(fPath))
-		{
-			const fileData = fs.readFileSync(fPath).toString();
-			sendToMyTelegram(fileData);
-			fs.rmSync(fPath);
-		}
-	}, 500);
-});
+import { event as onmail } from './modules/check_mail.mjs';
+const events = [onmail];
+
+const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
+
+events.map((e) => e(sendToMyTelegram));
 
 function sendToMyTelegram(msg)
 {
-	sendToTelegram(msg, BOT_TOKEN, CHAT_ID, (err) =>
+	sendToTelegram(msg, credentials.bot_token, credentials.chat_id, (err) =>
 	{
 		if (err)
 		{
