@@ -2,12 +2,14 @@
 import * as https from 'node:https';
 import * as fs from 'node:fs';
 
-import { event as file_watcher, tail } from './modules/file_watcher.mjs';
+import { tail } from './middlewares/tail.mjs';
+import { event as file_watcher } from './modules/file_watcher.mjs';
+import { event as command_watcher } from './modules/command_watcher.mjs';
 
 //Events list
 file_watcher({ path: '/var/mail' }, sendToMyTelegram);
-file_watcher({ path: '/proc/mdstat', timeout: 1800000 }, sendToMyTelegram);
-file_watcher({ path: '/run/utmp', middleware: () => 'Is new login!' }, sendToMyTelegram);
+command_watcher({ command: 'w', period: 1000 }, sendToMyTelegram);
+//command_watcher({ command: 'test.sh.', period: 1000, timeout: 30000, middleware: (data) => tail(data, 155) }, sendToMyTelegram);
 
 const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
 
