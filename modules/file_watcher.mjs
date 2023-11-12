@@ -14,22 +14,34 @@ export function event(input, callback)
 	if (timeout < 500) timeout = 500;
 	let middleware = input.middleware;
 	if (!middleware) middleware = simpleMiddleware;
-	fs.watch(input.path, (eventType, filename)=>
+	fs.stat(input.path, (err, stats) =>
 	{
-		if (eventType === 'change' && tid === null)
+		if (err)
 		{
-			tid = setTimeout(() =>
+			callback(err);
+		}
+		else
+		{
+			const isFile = stats.isFile();
+			fs.watch(input.path, (eventType, filename)=>
 			{
-				tid = null;
-				const fPath = path.join(input.path, filename);
-				if (fs.existsSync(fPath))
+				console.log(eventType);
+				if (eventType === 'change' && tid === null)
 				{
-					const fileData = fs.readFileSync(fPath).toString();
-					const fileDataProcessed = middleware(fileData);
-					const msg = `File: ${fPath}\n${fileDataProcessed}`;
-					callback(msg);
+					tid = setTimeout(() =>
+					{
+						tid = null;
+						const fPath = isFile ?  input.path : path.join(input.path, filename);
+						if (fs.existsSync(fPath))
+						{
+							const fileData = fs.readFileSync(fPath).toString();
+							const fileDataProcessed = middleware(fileData);
+							const msg = `File: ${fPath}\n${fileDataProcessed}`;
+							callback(msg);
+						}
+					}, timeout);
 				}
-			}, timeout);
+			});
 		}
 	});
 }
