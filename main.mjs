@@ -7,8 +7,8 @@ import { event as file_watcher } from './modules/file_watcher.mjs';
 import { event as command_watcher } from './modules/command_watcher.mjs';
 
 //Events list
-file_watcher({ path: '/var/mail' }, sendToMyTelegram);
-command_watcher({ command: 'w', period: 1000 }, sendToMyTelegram);
+file_watcher({ path: '/var/mail', header: 'Новое письм:' }, sendToMyTelegram);
+command_watcher({ command: 'w', period: 1000, header: 'Логин нового пользователя:' }, sendToMyTelegram);
 //command_watcher({ command: 'test.sh.', period: 1000, timeout: 30000, middleware: (data) => tail(data, 155) }, sendToMyTelegram);
 
 const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
