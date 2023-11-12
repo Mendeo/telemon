@@ -7,9 +7,12 @@ import { event as file_watcher } from './modules/file_watcher.mjs';
 import { event as command_watcher } from './modules/command_watcher.mjs';
 
 //Events list
-file_watcher({ path: '/var/mail', header: 'Новое письм:' }, sendToMyTelegram);
-command_watcher({ command: 'w', period: 1000, header: 'Логин нового пользователя:' }, sendToMyTelegram);
-//command_watcher({ command: 'test.sh.', period: 1000, timeout: 30000, middleware: (data) => tail(data, 155) }, sendToMyTelegram);
+file_watcher({ path: '/var/mail', header: 'Новое письмо:' }, sendToMyTelegram);
+file_watcher({ path: '/var/log/auth.log', header: 'Новое письмо:' }, sendToMyTelegram);
+file_watcher({ path: '/home/themen/auth.log', header: 'themen Новое письмо:' }, sendToMyTelegram);
+//file_watcher({ path: '/var/log/auth.log', header: 'Новый пользователь:', middleware: (text) => tail(text, 3), timeout: 30000 }, sendToMyTelegram);
+//command_watcher({ command: 'cat', args: ['/proc/mdstat'], period: 3000, header: 'Состояние рэйда изменилось. Следующая проверка через час.', timeout: 36000 }, sendToMyTelegram);
+//command_watcher({ command: 'who', args: ['-q'], period: 1000, header: 'Логин нового пользователя:' }, sendToMyTelegram);
 
 const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
 
