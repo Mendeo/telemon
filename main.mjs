@@ -8,12 +8,10 @@ import { event as command_watcher } from './modules/command_watcher.mjs';
 
 //Events list
 file_watcher({ path: '/var/mail', header: 'Новое письмо!' }, sendToMyTelegram);
-file_watcher({ path: '/var/log/auth.log', header: 'Новый пользователь!', middleware: (text) => tail(text, 3) }, sendToMyTelegram);
-file_watcher({ path: '/prog/mdstat', header: 'Состояние рэйда изменилось. Следующая проверка через час.', timeout: 3600000 }, sendToMyTelegram);
+file_watcher({ path: '/var/log/auth.log', header: 'Статус пользователя изменился!', middleware: (text) => tail(text, 2) }, sendToMyTelegram);
+file_watcher({ path: '/proc/mdstat', header: 'Состояние рэйда изменилось. Следующая проверка пол часа.', timeout: 1800000 }, sendToMyTelegram);
 //command_watcher({ command: 'cat', args: ['/proc/mdstat'], period: 3000, header: 'Состояние рэйда изменилось. Следующая проверка через час.', timeout: 36000 }, sendToMyTelegram);
 //command_watcher({ command: 'who', args: ['-q'], period: 1000, header: 'Логин нового пользователя:' }, sendToMyTelegram);
-
-file_watcher({ path: 'c:\\tmp\\qq\\.eslintrc.json', header: 'themen Новое письмо:' }, sendToMyTelegram);
 
 const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
 

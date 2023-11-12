@@ -36,7 +36,7 @@ export function event(input, callback)
 						{
 							const fileData = fs.readFileSync(fPath).toString();
 							const fileDataProcessed = middleware(fileData);
-							const msg = `File: ${fPath}\n${fileDataProcessed}`;
+							const msg = `${input.header ? input.header + '\n' : ''}${fileDataProcessed}`;
 							callback(msg);
 						}
 					}, timeout);
