@@ -25,7 +25,6 @@ export function event(input, callback)
 			const isFile = stats.isFile();
 			fs.watch(input.path, (eventType, filename)=>
 			{
-				console.log(eventType);
 				if (eventType === 'change' && tid === null)
 				{
 					tid = setTimeout(() =>
