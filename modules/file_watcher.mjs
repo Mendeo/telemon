@@ -8,10 +8,8 @@ import * as path from 'node:path';
  */
 export function event(input, callback)
 {
+	const jitterTime = 500;
 	let tid = null;
-	let timeout = input.timeout;
-	if (!timeout) timeout = 500;
-	if (timeout < 500) timeout = 500;
 	let middleware = input.middleware;
 	if (!middleware) middleware = simpleMiddleware;
 	fs.stat(input.path, (err, stats) =>
@@ -23,9 +21,10 @@ export function event(input, callback)
 		else
 		{
 			const isFile = stats.isFile();
+			let isWatchingEnabled = true;
 			fs.watch(input.path, (eventType, filename)=>
 			{
-				if (eventType === 'change' && tid === null)
+				if (eventType === 'change' && tid === null && isWatchingEnabled)
 				{
 					tid = setTimeout(() =>
 					{
@@ -37,8 +36,13 @@ export function event(input, callback)
 							const fileDataProcessed = middleware(fileData);
 							const msg = `${input.header ? input.header + '\n' : ''}${fileDataProcessed}`;
 							callback(msg);
+							if (input.timeout > 0)
+							{
+								isWatchingEnabled = false;
+								setTimeout(() => isWatchingEnabled = true, input.timeout);
+							}
 						}
-					}, timeout);
+					}, jitterTime);
 				}
 			});
 		}
