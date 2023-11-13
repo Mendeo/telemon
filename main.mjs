@@ -5,18 +5,54 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'url';
 //import * as net from 'node:net';
 
-import { tail } from './middlewares/tail.mjs';
+import { tail, parseRPItemp } from './middlewares.mjs';
 import { event as file_watcher } from './modules/file_watcher.mjs';
-//import { event as command_watcher } from './modules/command_watcher.mjs';
+import { event as command_watcher } from './modules/command_watcher.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 //Events list
-file_watcher({ path: '/var/mail', header: 'Новое письмо!' }, sendToMyTelegram);
-file_watcher({ path: '/var/log/auth.log', header: 'Статус пользователя изменился!', trigger: (text) => text.indexOf('New session') !== -1, middleware: (text) => tail(text, 2) }, sendToMyTelegram);
-file_watcher({ path: '/proc/mdstat', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', timeout: 1800000 }, sendToMyTelegram);
+/*Проверка системной почты*/
+file_watcher(
+	{
+		path: '/var/mail',
+		header: 'Новое письмо!'
+	}, sendToMyTelegram);
 
+/*Сообщение о новых сессиях пользователей*/
+file_watcher(
+	{
+		path: '/var/log/auth.log',
+		header: 'Статус пользователя изменился!',
+		trigger: (text) => text.indexOf('New session') !== -1,
+		middleware: (text) => tail(text, 2)
+	}, sendToMyTelegram);
+
+/*Изменение статуса райд массива*/
+file_watcher(
+	{
+		path: '/proc/mdstat',
+		header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.',
+		timeout: 1800000
+	}, sendToMyTelegram);
+
+/*Отслеживание температуры процессора*/
+command_watcher(
+	{
+		command: 'vcgencmd',
+		args: ['measure_temp'],
+		period: 30000,
+		header: 'Температура процессора достигла 65 градусов!',
+		timeout: 180000,
+		trigger: (text) =>
+		{
+			const tC = parseRPItemp(text);
+			return tC >= 65;
+		}
+	}, sendToMyTelegram);
+
+/*Отладка*/
 //file_watcher({ path: 'qq.txt', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', trigger: (text) => text.indexOf('!') !== -1, timeout: 5000 }, sendToTestServer);
 //command_watcher({ command: 'bash', args: ['test/qq.sh', 'test1', 'test2'], period: 3000, header: 'Проверка', timeout: 10000, trigger: (text) => text.indexOf('@') !== -1 }, sendToTestServer);
 
