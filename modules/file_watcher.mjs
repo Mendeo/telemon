@@ -34,12 +34,17 @@ export function event(input, callback)
 						{
 							const fileData = fs.readFileSync(fPath).toString();
 							const fileDataProcessed = middleware(fileData);
-							const msg = `${input.header ? input.header + '\n' : ''}${fileDataProcessed}`;
-							callback(msg);
-							if (input.timeout > 0)
+							let trigger = true;
+							if (input.trigger) trigger = input.trigger(fileDataProcessed);
+							if (trigger)
 							{
-								isWatchingEnabled = false;
-								setTimeout(() => isWatchingEnabled = true, input.timeout);
+								const msg = `${input.header ? input.header + '\n' : ''}${fileDataProcessed}`;
+								callback(msg);
+								if (input.timeout > 0)
+								{
+									isWatchingEnabled = false;
+									setTimeout(() => isWatchingEnabled = true, input.timeout);
+								}
 							}
 						}
 					}, jitterTime);
