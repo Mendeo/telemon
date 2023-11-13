@@ -1,19 +1,42 @@
 'use strict';
 import * as https from 'node:https';
 import * as fs from 'node:fs';
+import * as net from 'node:net';
 
 import { tail } from './middlewares/tail.mjs';
 import { event as file_watcher } from './modules/file_watcher.mjs';
 import { event as command_watcher } from './modules/command_watcher.mjs';
 
 //Events list
-file_watcher({ path: '/var/mail', header: 'Новое письмо!' }, sendToMyTelegram);
-file_watcher({ path: '/var/log/auth.log', header: 'Статус пользователя изменился!', middleware: (text) => tail(text, 2) }, sendToMyTelegram);
-file_watcher({ path: '/proc/mdstat', header: 'Состояние рэйда изменилось. Следующая проверка пол часа.', timeout: 1800000 }, sendToMyTelegram);
-//command_watcher({ command: 'cat', args: ['/proc/mdstat'], period: 3000, header: 'Состояние рэйда изменилось. Следующая проверка через час.', timeout: 36000 }, sendToMyTelegram);
+//file_watcher({ path: '/var/mail', header: 'Новое письмо!' }, sendToMyTelegram);
+//file_watcher({ path: '/var/log/auth.log', header: 'Статус пользователя изменился!', middleware: (text) => tail(text, 2) }, sendToMyTelegram);
+//file_watcher({ path: '/proc/mdstat', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', timeout: 1800000 }, sendToMyTelegram);
+
+command_watcher({ command: 'bash', args: ['test/qq.sh', 'test1', 'test2'], period: 3000, header: 'Проверка', timeout: 36000 }, sendToTestServer);
 //command_watcher({ command: 'who', args: ['-q'], period: 1000, header: 'Логин нового пользователя:' }, sendToMyTelegram);
 
 const credentials = JSON.parse(fs.readFileSync('./credentials.json').toString());
+
+let client = null;
+function sendToTestServer(msg)
+{
+	if (!client)
+	{
+		client = new net.Socket();
+		client.connect(8080, 'localhost');
+		client.on('connect', () =>
+		{
+			//console.log('Connection established');
+			client.write(msg + '\n*******\n');
+		});
+		client.on('error', () => console.log('Error occurred'));
+		client.on('close', () => console.log('Connection closed'));
+	}
+	else
+	{
+		client.write(msg + '\n*******\n');
+	}
+}
 
 function sendToMyTelegram(msg)
 {
