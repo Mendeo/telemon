@@ -14,10 +14,11 @@ const __dirname = path.dirname(__filename);
 
 //Events list
 file_watcher({ path: '/var/mail', header: 'Новое письмо!' }, sendToMyTelegram);
-file_watcher({ path: '/var/log/auth.log', header: 'Статус пользователя изменился!', middleware: (text) => tail(text, 2) }, sendToMyTelegram);
+file_watcher({ path: '/var/log/auth.log', header: 'Статус пользователя изменился!', trigger: (text) => text.indexOf('New session') !== -1, middleware: (text) => tail(text, 2) }, sendToMyTelegram);
 file_watcher({ path: '/proc/mdstat', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', timeout: 1800000 }, sendToMyTelegram);
 
-//command_watcher({ command: 'bash', args: ['test/qq.sh', 'test1', 'test2'], period: 3000, header: 'Проверка', timeout: 36000 }, sendToTestServer);
+//file_watcher({ path: 'qq.txt', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', trigger: (text) => text.indexOf('!') !== -1, timeout: 5000 }, sendToTestServer);
+//command_watcher({ command: 'bash', args: ['test/qq.sh', 'test1', 'test2'], period: 3000, header: 'Проверка', timeout: 10000, trigger: (text) => text.indexOf('@') !== -1 }, sendToTestServer);
 
 const credentials = JSON.parse(fs.readFileSync(path.join(__dirname, 'credentials.json')).toString());
 
