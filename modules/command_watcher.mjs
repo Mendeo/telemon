@@ -13,6 +13,7 @@ export function event(input, callback)
 
 	function onexec(err, data)
 	{
+		timerId = setTimeout(() => execCommand(onexec), input.period);
 		if (err)
 		{
 			send(err);
@@ -26,7 +27,6 @@ export function event(input, callback)
 				dataOld = data;
 			}
 		}
-		timerId = setTimeout(() => execCommand(onexec), input.period);
 		function send(data, middleware)
 		{
 			if (middleware) data = middleware(data);
