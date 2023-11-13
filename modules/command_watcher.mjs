@@ -30,13 +30,18 @@ export function event(input, callback)
 		function send(middleware)
 		{
 			if (middleware) data = middleware(data);
-			if (input.header) data = input.header + '\n' + data;
-			callback(data);
-			if (input.timeout > 0)
+			let trigger = true;
+			if (input.trigger) trigger = input.trigger(data);
+			if (trigger)
 			{
-				if (timerId) clearInterval(timerId);
-				dataOld = null;
-				setTimeout(() => execCommand(onexec), input.timeout);
+				if (input.header) data = input.header + '\n' + data;
+				callback(data);
+				if (input.timeout > 0)
+				{
+					if (timerId) clearInterval(timerId);
+					dataOld = null;
+					setTimeout(() => execCommand(onexec), input.timeout);
+				}
 			}
 		}
 	}
