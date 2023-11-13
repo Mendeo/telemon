@@ -23,11 +23,11 @@ export function event(input, callback)
 			if (dataOld === null) dataOld = data;
 			if (dataOld !== data)
 			{
-				send(data, input.middleware);
 				dataOld = data;
+				send(input.middleware);
 			}
 		}
-		function send(data, middleware)
+		function send(middleware)
 		{
 			if (middleware) data = middleware(data);
 			if (input.header) data = input.header + '\n' + data;
@@ -35,6 +35,7 @@ export function event(input, callback)
 			if (input.timeout > 0)
 			{
 				if (timerId) clearInterval(timerId);
+				dataOld = null;
 				setTimeout(() => execCommand(onexec), input.timeout);
 			}
 		}
