@@ -57,7 +57,7 @@ command_watcher(
 				period: 30000,
 				header: 'Важные изменения SMART!',
 				post: null,
-				trigger: (smartJson) =>
+				trigger: function(smartJson)
 				{
 					const test = testSmart(smartJson);
 					this.post = test.post;
