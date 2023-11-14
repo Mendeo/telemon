@@ -6,7 +6,7 @@ import * as path from 'node:path';
  * @param {input} - Объект со следующими свойствами: path - путь к файлу или папке. Остальные не обязательные: timeout - время паузы мониторинга после срабатывания. Минимальное время 500 мс, middleware - функция обрабатывающая данные из изменённого файла.
  * @param {callback} - callback - функция, вызывается после наступления события.
  */
-export function event(input, callback)
+export function event(input, callbacks)
 {
 	const jitterTime = 500;
 	let tid = null;
@@ -14,7 +14,7 @@ export function event(input, callback)
 	{
 		if (err)
 		{
-			callback(err);
+			for (let callback of callbacks) callback(err);
 		}
 		else
 		{
@@ -38,7 +38,7 @@ export function event(input, callback)
 							{
 								if (input.post) data = input.post(data, fPath, filename);
 								const msg = `${input.header ? input.header + '\n' : ''}${data}`;
-								callback(msg);
+								for (let callback of callbacks) callback(msg);
 								if (input.timeout > 0)
 								{
 									isWatchingEnabled = false;

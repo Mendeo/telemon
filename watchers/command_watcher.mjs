@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
  * @param {input} - Объект со следующими свойствами: command - команда для исполнения, period - периодичность опроса. Остальные не обязательные: args - аргументы команды, workdir - рабочая папка, header - заголовок сообщения, timeout - время паузы мониторинга после срабатывания. Минимальное время 500 мс, middleware - функция обрабатывающая данные из изменённого файла.
  * @param {callback} - callback - функция, вызывается после наступления события.
  */
-export function event(input, callback)
+export function event(input, callbacks)
 {
 	let dataOld = null;
 	let timerId = null;
@@ -36,7 +36,7 @@ export function event(input, callback)
 			{
 				if (input.post) data = input.post(data);
 				if (input.header) data = input.header + '\n' + data;
-				callback(data);
+				for (let callback of callbacks) callback(data);
 				if (input.timeout > 0)
 				{
 					if (timerId) clearInterval(timerId);
