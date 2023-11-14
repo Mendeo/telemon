@@ -68,5 +68,21 @@ command_watcher(
 }
 
 /*Отладка*/
-//file_watcher({ path: 'qq.txt', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', trigger: (text) => text.indexOf('!') !== -1, timeout: 5000 }, sendToTestServer);
-//command_watcher({ command: 'bash', args: ['test/qq.sh', 'test1', 'test2'], period: 3000, header: 'Проверка', timeout: 10000, trigger: (text) => text.indexOf('@') !== -1 }, sendToTestServer);
+
+/*
+import { send as sendToTcp } from './senders/tcp/send.mjs';
+command_watcher(
+	{
+		command: 'bash',
+		args: ['test/qq.sh'],
+		period: 3000,
+		header: 'Важные изменения SMART!',
+		post: null,
+		trigger: function(smartJson)
+		{
+			const test = testSmart(smartJson);
+			this.post = test.post;
+			return test.result;
+		},
+	}, [sendToTcp]);
+*/

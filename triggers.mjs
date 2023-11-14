@@ -14,7 +14,7 @@ export function testSmart(smartJson)
 		return { result: true, post };
 	}
 	let result = false;
-	let error = 'Ошибка smart!\n';
+	let error = '';
 	for (let row of smart.ata_smart_attributes.table)
 	{
 		if (row.id === 1 && row.raw.value !== 0) //Raw_Read_Error_Rate
@@ -72,6 +72,6 @@ export function testSmart(smartJson)
 			result = true;
 			error += `${row.name} = ${row.raw.value}\n`;
 		}
-		return { result, post: () => result ? error : null };
 	}
+	return { result, post: () => result ? error : null };
 }
