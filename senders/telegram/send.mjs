@@ -14,11 +14,11 @@ export function send(msg)
 	{
 		if (err)
 		{
-			console.log(`Запрос на телеграм сервер неудачный:\n${err}`);
+			console.log(`Request to Telegram server failed:\n${err}`);
 		}
 		else
 		{
-			console.log('Сообщение в телеграм отправлено.');
+			console.log('Message sent.');
 		}
 	});
 }

@@ -21,7 +21,7 @@ export function send(msg)
 		{
 			client.write(msg + '\n*******\n');
 		});
-		client.on('error', (e) => console.log('Отправка сообщение на TCP сервер неудачна. ' + e));
+		client.on('error', (e) => console.log('Message sending failed ' + e));
 		client.on('close', () => console.log('Connection closed'));
 	}
 	else
