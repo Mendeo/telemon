@@ -24,9 +24,9 @@ file_watcher(
 file_watcher(
 	{
 		path: '/var/log/auth.log',
-		header: 'Статус пользователя изменился!',
-		trigger: (text) => text.indexOf('New session') !== -1,
-		middleware: (text) => tail(text, 2)
+		header: 'Новый логин на сервер!',
+		pre: (text) => tail(text, 2),
+		trigger: (text) => text.indexOf('New session') !== -1
 	}, sendToMyTelegram);
 
 /*Изменение статуса райд массива*/
@@ -43,13 +43,11 @@ command_watcher(
 		command: 'vcgencmd',
 		args: ['measure_temp'],
 		period: 30000,
-		header: 'Температура процессора достигла 65 градусов!',
+		header: 'Температура процессора превысила 65 градусов!',
 		timeout: 180000,
-		trigger: (text) =>
-		{
-			const tC = parseRPItemp(text);
-			return tC >= 65;
-		}
+		pre: parseRPItemp,
+		trigger: (t) => Number(t) >= 65,
+		post: (t) => `t = ${t}°C`
 	}, sendToMyTelegram);
 
 /*Отладка*/

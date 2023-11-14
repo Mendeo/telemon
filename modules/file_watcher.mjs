@@ -10,8 +10,6 @@ export function event(input, callback)
 {
 	const jitterTime = 500;
 	let tid = null;
-	let middleware = input.middleware;
-	if (!middleware) middleware = simpleMiddleware;
 	fs.stat(input.path, (err, stats) =>
 	{
 		if (err)
@@ -32,13 +30,14 @@ export function event(input, callback)
 						const fPath = isFile ?  input.path : path.join(input.path, filename);
 						if (fs.existsSync(fPath))
 						{
-							const fileData = fs.readFileSync(fPath).toString();
-							const fileDataProcessed = middleware(fileData);
+							let data = fs.readFileSync(fPath).toString();
+							if (input.pre) data = input.pre(data);
 							let trigger = true;
-							if (input.trigger) trigger = input.trigger(fileDataProcessed);
+							if (input.trigger) trigger = input.trigger(data);
 							if (trigger)
 							{
-								const msg = `${input.header ? input.header + '\n' : ''}${fileDataProcessed}`;
+								if (input.post) data = input.post(data);
+								const msg = `${input.header ? input.header + '\n' : ''}${data}`;
 								callback(msg);
 								if (input.timeout > 0)
 								{

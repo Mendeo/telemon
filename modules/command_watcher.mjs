@@ -24,16 +24,17 @@ export function event(input, callback)
 			if (dataOld !== data)
 			{
 				dataOld = data;
-				send(input.middleware);
+				send(data);
 			}
 		}
-		function send(middleware)
+		function send(data)
 		{
-			if (middleware) data = middleware(data);
+			if (input.pre) data = input.pre(data);
 			let trigger = true;
 			if (input.trigger) trigger = input.trigger(data);
 			if (trigger)
 			{
+				if (input.post) data = input.post(data);
 				if (input.header) data = input.header + '\n' + data;
 				callback(data);
 				if (input.timeout > 0)

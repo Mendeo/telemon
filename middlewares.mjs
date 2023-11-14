@@ -10,5 +10,5 @@ export function parseRPItemp(str)
 	const aux = str.split('=')[1];
 	const index = aux.indexOf('\'');
 	if (index == -1) return false;
-	return Number(aux.slice(0, index));
+	return aux.slice(0, index);
 }
