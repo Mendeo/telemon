@@ -1,5 +1,6 @@
 'use strict';
 import { tail, parseRPItemp } from './middlewares.mjs';
+import { testSmart } from './triggers.mjs';
 import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
 import { event as file_watcher } from './watchers/file_watcher.mjs';
 import { event as command_watcher } from './watchers/command_watcher.mjs';
@@ -42,6 +43,28 @@ command_watcher(
 		trigger: (t) => Number(t) >= 65,
 		post: (t) => `t = ${t}°C`
 	}, sendToMyTelegram);
+
+/*Отслеживание работы жёстких дисков*/
+{
+	setDiskWatcher('/dev/sda');
+	setDiskWatcher('/dev/sdb');
+	function setDiskWatcher(disk)
+	{
+		command_watcher(
+			{
+				command: 'smartctl',
+				args: ['-a', '-j', '-d', 'sat', disk],
+				period: 30000,
+				header: 'Важные изменения SMART!',
+				trigger: (smartJson) =>
+				{
+					const test = testSmart(smartJson);
+					this.post = test.post;
+					return test.result;
+				},
+			}, sendToMyTelegram);
+	}
+}
 
 /*Отладка*/
 //file_watcher({ path: 'qq.txt', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', trigger: (text) => text.indexOf('!') !== -1, timeout: 5000 }, sendToTestServer);
