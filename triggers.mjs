@@ -42,7 +42,7 @@ export function testSmart(smartJson)
 			result = true;
 			error += `${row.name} = ${row.raw.value}\n`;
 		}
-		if (row.id === 194 && row.raw.value >= 50) //Temperature_Celsius
+		if (row.id === 194 && row.raw.value >= 40) //Temperature_Celsius
 		{
 			result = true;
 			error += `${row.name} = ${row.raw.value}\n`;

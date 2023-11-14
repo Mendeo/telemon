@@ -54,8 +54,9 @@ command_watcher(
 			{
 				command: 'smartctl',
 				args: ['-a', '-j', '-d', 'sat', disk],
-				period: 300000,
+				period: 30000,
 				header: 'Важные изменения SMART!',
+				post: null,
 				trigger: (smartJson) =>
 				{
 					const test = testSmart(smartJson);
