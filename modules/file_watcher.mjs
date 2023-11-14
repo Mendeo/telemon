@@ -31,12 +31,12 @@ export function event(input, callback)
 						if (fs.existsSync(fPath))
 						{
 							let data = fs.readFileSync(fPath).toString();
-							if (input.pre) data = input.pre(data);
+							if (input.pre) data = input.pre(data, fPath, filename);
 							let trigger = true;
 							if (input.trigger) trigger = input.trigger(data);
 							if (trigger)
 							{
-								if (input.post) data = input.post(data);
+								if (input.post) data = input.post(data, fPath, filename);
 								const msg = `${input.header ? input.header + '\n' : ''}${data}`;
 								callback(msg);
 								if (input.timeout > 0)
@@ -51,9 +51,4 @@ export function event(input, callback)
 			});
 		}
 	});
-}
-
-function simpleMiddleware(fileData)
-{
-	return fileData;
 }

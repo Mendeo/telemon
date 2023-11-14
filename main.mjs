@@ -17,7 +17,8 @@ const __dirname = path.dirname(__filename);
 file_watcher(
 	{
 		path: '/var/mail',
-		header: 'Новое письмо!'
+		header: 'Новое письмо!',
+		post: (text, fPath) => `Файл: ${fPath}\n${text}`
 	}, sendToMyTelegram);
 
 /*Сообщение о новых сессиях пользователей*/
