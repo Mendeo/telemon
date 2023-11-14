@@ -5,7 +5,6 @@ import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
 import { event as file_watcher } from './watchers/file_watcher.mjs';
 import { event as command_watcher } from './watchers/command_watcher.mjs';
 
-const senders = [sendToMyTelegram];
 //Events list
 /*Проверка системной почты*/
 file_watcher(
@@ -13,7 +12,7 @@ file_watcher(
 		path: '/var/mail',
 		header: 'Новое письмо!',
 		post: (text, fPath) => `Файл: ${fPath}\n${text}`
-	}, senders);
+	}, [sendToMyTelegram]);
 
 /*Сообщение о новых сессиях пользователей*/
 file_watcher(
@@ -22,7 +21,7 @@ file_watcher(
 		header: 'Новый логин на сервер!',
 		pre: (text) => tail(text, 2),
 		trigger: (text) => text.indexOf('New session') !== -1
-	}, senders);
+	}, [sendToMyTelegram]);
 
 /*Изменение статуса райд массива*/
 file_watcher(
@@ -30,7 +29,7 @@ file_watcher(
 		path: '/proc/mdstat',
 		header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.',
 		timeout: 1800000
-	}, senders);
+	}, [sendToMyTelegram]);
 
 /*Отслеживание температуры процессора*/
 command_watcher(
@@ -43,7 +42,7 @@ command_watcher(
 		pre: parseRPItemp,
 		trigger: (t) => Number(t) >= 65,
 		post: (t) => `t = ${t}°C`
-	}, senders);
+	}, [sendToMyTelegram]);
 
 /*Отслеживание работы жёстких дисков*/
 {
@@ -63,7 +62,7 @@ command_watcher(
 					this.post = test.post;
 					return test.result;
 				},
-			}, senders);
+			}, [sendToMyTelegram]);
 	}
 }
 
