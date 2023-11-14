@@ -1,16 +1,8 @@
 'use strict';
-import * as https from 'node:https';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { fileURLToPath } from 'url';
-//import * as net from 'node:net';
-
 import { tail, parseRPItemp } from './middlewares.mjs';
-import { event as file_watcher } from './modules/file_watcher.mjs';
-import { event as command_watcher } from './modules/command_watcher.mjs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
+import { event as file_watcher } from './watchers/file_watcher.mjs';
+import { event as command_watcher } from './watchers/command_watcher.mjs';
 
 //Events list
 /*Проверка системной почты*/
@@ -54,95 +46,3 @@ command_watcher(
 /*Отладка*/
 //file_watcher({ path: 'qq.txt', header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.', trigger: (text) => text.indexOf('!') !== -1, timeout: 5000 }, sendToTestServer);
 //command_watcher({ command: 'bash', args: ['test/qq.sh', 'test1', 'test2'], period: 3000, header: 'Проверка', timeout: 10000, trigger: (text) => text.indexOf('@') !== -1 }, sendToTestServer);
-
-const credentials = JSON.parse(fs.readFileSync(path.join(__dirname, 'credentials.json')).toString());
-
-/*Функция для отправки сообщений в tcp (nc -lp 8080)*/
-// let client = null;
-// function sendToTestServer(msg)
-// {
-// 	if (!client)
-// 	{
-// 		client = new net.Socket();
-// 		client.connect(8080, 'localhost');
-// 		client.on('connect', () =>
-// 		{
-// 			client.write(msg + '\n*******\n');
-// 		});
-// 		client.on('error', () => console.log('Error occurred'));
-// 		client.on('close', () => console.log('Connection closed'));
-// 	}
-// 	else
-// 	{
-// 		client.write(msg + '\n*******\n');
-// 	}
-// }
-
-function sendToMyTelegram(msg)
-{
-	sendToTelegram(msg, credentials.bot_token, credentials.chat_id, (err) =>
-	{
-		if (err)
-		{
-			console.log(`Запрос неудачный:\n${err}`);
-		}
-		else
-		{
-			console.log('Сообщение отправлено.');
-		}
-	});
-}
-
-function sendToTelegram(msg, botToken, chatId, onAnswer)
-{
-	let answerTxt = '';
-	const postData = JSON.stringify({ text: msg, chat_id: chatId });
-	const options =
-	{
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' }
-	};
-	const req = https.request(`https://api.telegram.org/bot${botToken}/sendMessage`, options, (res) =>
-	{
-		if (res.statusCode === 200)
-		{
-			res.on('data', (d) =>
-			{
-				answerTxt += d;
-			});
-			let isErr = false;
-			res.on('error', (err) =>
-			{
-				isErr = true;
-				onAnswer(err);
-			});
-			res.on('close', () =>
-			{
-				if (isErr) return;
-				let data = {};
-				try
-				{
-					data = JSON.parse(answerTxt);
-				}
-				catch(e)
-				{
-					onAnswer(e);
-				}
-				if (!data.ok)
-				{
-					onAnswer(data.description);
-				}
-				else
-				{
-					onAnswer(null, data);
-				}
-			});
-		}
-		else
-		{
-			onAnswer('Status code: ' + res.statusCode);
-		}
-	});
-	req.on('error', onAnswer);
-	req.end(postData);
-}
