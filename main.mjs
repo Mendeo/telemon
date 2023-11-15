@@ -73,7 +73,7 @@ command_watcher(
 	{
 		command: 'uptime',
 		period: 150000,
-		timeout: 600000,
+		timeout: 1800000,
 		header: 'Повышенная нагрузка на ЦП',
 		pre: (text) => middlewares.parseLoadAverageFromUptime(text, 2),
 		trigger: (la2) => Number(la2) > 4,
