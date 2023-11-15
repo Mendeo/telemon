@@ -38,7 +38,7 @@ command_watcher(
 		args: ['measure_temp'],
 		period: 30000,
 		header: 'Температура процессора превысила 65 градусов!',
-		timeout: 300000,
+		timeout: 1800000,
 		pre: middlewares.parseRPItemp,
 		trigger: (t) => Number(t) >= 65,
 		post: (t) => `t = ${t}°C`
