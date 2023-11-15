@@ -38,7 +38,7 @@ command_watcher(
 		args: ['measure_temp'],
 		period: 30000,
 		header: 'Температура процессора превысила 65 градусов!',
-		timeout: 180000,
+		timeout: 300000,
 		pre: middlewares.parseRPItemp,
 		trigger: (t) => Number(t) >= 65,
 		post: (t) => `t = ${t}°C`
@@ -81,20 +81,16 @@ command_watcher(
 
 /*Отладка*/
 
-/*
-import { send as sendToTcp } from './senders/tcp/send.mjs';
-command_watcher(
-	{
-		command: 'bash',
-		args: ['test/qq.sh'],
-		period: 3000,
-		header: 'Важные изменения SMART!',
-		post: null,
-		trigger: function(smartJson)
-		{
-			const test = testSmart(smartJson);
-			this.post = test.post;
-			return test.result;
-		},
-	}, [sendToTcp]);
-*/
+/* Отслеживание температуры процессора */
+// import { send as sendToTcp } from './senders/tcp/send.mjs';
+// command_watcher(
+// 	{
+// 		command: 'bash',
+// 		args: ['test/test.sh'],
+// 		period: 3000,
+// 		header: 'Температура процессора превысила 65 градусов!',
+// 		timeout: 10000,
+// 		pre: middlewares.parseRPItemp,
+// 		trigger: (t) => Number(t) >= 65,
+// 		post: (t) => `t = ${t}°C`
+// 	}, [sendToTcp, sendToMyTelegram]);
