@@ -75,7 +75,7 @@ command_watcher(
 		period: 150000,
 		timeout: 600000,
 		header: 'Повышенная нагрузка на ЦП',
-		pre: middlewares.parseLoadAverageFromUptime,
+		pre: (text) => middlewares.parseLoadAverageFromUptime(text, 2),
 		trigger: (la2) => Number(la2) > 4,
 	}, [sendToMyTelegram]);
 
