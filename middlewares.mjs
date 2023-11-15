@@ -12,3 +12,12 @@ export function parseRPItemp(str)
 	if (index == -1) return false;
 	return aux.slice(0, index);
 }
+
+export function parseLoadAverageFromUptime(str)
+{
+	const label = 'load average: ';
+	const index = str.indexOf(label) + label.length;
+	if (index === -1) return '';
+	const data = str.slice(index).split(', ');
+	return data[1];
+}

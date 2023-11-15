@@ -1,12 +1,12 @@
 'use strict';
-import { tail, parseRPItemp } from './middlewares.mjs';
+import * as middlewares from './middlewares.mjs';
 import { testSmart } from './triggers.mjs';
 import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
 import { event as file_watcher } from './watchers/file_watcher.mjs';
 import { event as command_watcher } from './watchers/command_watcher.mjs';
 
 //Events list
-/*Проверка системной почты*/
+/* Проверка системной почты */
 file_watcher(
 	{
 		path: '/var/mail',
@@ -14,16 +14,16 @@ file_watcher(
 		post: (text, fPath) => `Файл: ${fPath}\n${text}`
 	}, [sendToMyTelegram]);
 
-/*Сообщение о новых сессиях пользователей*/
+/* Сообщение о новых сессиях пользователей */
 file_watcher(
 	{
 		path: '/var/log/auth.log',
 		header: 'Новый логин на сервер!',
-		pre: (text) => tail(text, 2),
+		pre: (text) => middlewares.tail(text, 2),
 		trigger: (text) => text.indexOf('New session') !== -1
 	}, [sendToMyTelegram]);
 
-/*Изменение статуса райд массива*/
+/* Изменение статуса райд массива */
 file_watcher(
 	{
 		path: '/proc/mdstat',
@@ -31,7 +31,7 @@ file_watcher(
 		timeout: 1800000
 	}, [sendToMyTelegram]);
 
-/*Отслеживание температуры процессора*/
+/* Отслеживание температуры процессора */
 command_watcher(
 	{
 		command: 'vcgencmd',
@@ -39,12 +39,12 @@ command_watcher(
 		period: 30000,
 		header: 'Температура процессора превысила 65 градусов!',
 		timeout: 180000,
-		pre: parseRPItemp,
+		pre: middlewares.parseRPItemp,
 		trigger: (t) => Number(t) >= 65,
 		post: (t) => `t = ${t}°C`
 	}, [sendToMyTelegram]);
 
-/*Отслеживание работы жёстких дисков*/
+/* Отслеживание работы жёстких дисков */
 {
 	setDiskWatcher('/dev/sda');
 	setDiskWatcher('/dev/sdb');
@@ -67,6 +67,17 @@ command_watcher(
 			}, [sendToMyTelegram]);
 	}
 }
+
+/* Отслеживание загрузки ЦП */
+command_watcher(
+	{
+		command: 'uptime',
+		period: 150000,
+		timeout: 600000,
+		header: 'Повышенная нагрузка на ЦП',
+		pre: middlewares.parseLoadAverageFromUptime,
+		trigger: (la2) => Number(la2) > 4,
+	}, [sendToMyTelegram]);
 
 /*Отладка*/
 
