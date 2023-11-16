@@ -63,7 +63,6 @@ export function event(input, callbacks)
 			let tid = null;
 			fs.watch(input.path, (eventType, filename)=>
 			{
-				console.log(eventType, filename);
 				if (eventType === 'change' && tid === null && isWatchingEnabled)
 				{
 					tid = setTimeout(() =>
