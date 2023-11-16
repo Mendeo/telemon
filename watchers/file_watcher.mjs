@@ -9,7 +9,6 @@ import * as path from 'node:path';
 export function event(input, callbacks)
 {
 	const jitterTime = 500;
-	let tid = null;
 	fs.stat(input.path, (err, stats) =>
 	{
 		if (err)
@@ -20,6 +19,7 @@ export function event(input, callbacks)
 		{
 			const isFile = stats.isFile();
 			let isWatchingEnabled = true;
+			let tid = null;
 			fs.watch(input.path, (eventType, filename)=>
 			{
 				if (eventType === 'change' && tid === null && isWatchingEnabled)
