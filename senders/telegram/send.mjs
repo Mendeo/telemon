@@ -7,7 +7,22 @@ import * as https from 'node:https';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * @module
+*/
+
+/** Считываются значения bot token и chat_id из файла credentials.json
+ * @type {Object}
+ * @property {string} bot_token - Токен для телеграм бота.
+ * @property {string} chat_id - сhat id - кому посылать сообщение.
+*/
 const credentials = JSON.parse(fs.readFileSync(path.join(__dirname, 'credentials.json')).toString());
+
+/**
+ * Отправляет заданное сообщение в телеграм. Куда отправлять определяется в переменной credentials
+ * @param {string} msg - Текст сообщения
+ * [credentials]
+ */
 export function send(msg)
 {
 	sendToTelegram(msg, credentials.bot_token, credentials.chat_id, (err) =>
@@ -23,6 +38,18 @@ export function send(msg)
 	});
 }
 
+/**
+ * @callback onAnswer
+ * @param {string} err - Сообщение об ошибке (это может ошибка доступа к телеграм серверу, или сервер сообщил об ошибке)
+ * @param {object} data - Успешный ответ от телеграм сервера в виде объекта.
+ */
+/**
+ * Отправляет заданное сообщение в телеграм. Куда отправлять определяется в параметрах этой функции.
+ * @param {string} msg - Текст сообщения
+ * @param {string} botToken - Токен для телеграм бота.
+ * @param {string} chatId - сhat id - кому посылать сообщение.
+ * @param {onAnswer} onAnswer - Вызывается после ответа от сервера телеграм.
+ */
 function sendToTelegram(msg, botToken, chatId, onAnswer)
 {
 	let answerTxt = '';
