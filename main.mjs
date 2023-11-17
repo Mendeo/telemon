@@ -82,6 +82,33 @@ command_watcher(
 		trigger: (la2) => Number(la2) > 4,
 	}, [sendToMyTelegram]);
 
+// Оповещение о превышении трафика.
+{
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = now.getMonth();
+	const date = now.getDate();
+	const tomorrow = new Date(year, month, date + 1);
+	const delta = tomorrow - now;
+	command_watcher(
+		{
+			command: 'vnstat',
+			args: ['-i', 'eth0', '--json', 'd', '1'],
+			period: 1200000,
+			timeout: delta,
+			header: 'Превышено 2 ГиБ траффика.',
+			pre: (text) =>
+			{
+				const data = JSON.parse(text).interfaces[0].traffic.day[0];
+				return { rx: data.rx, tx: data.tx, tot: data.rx + data.tx };
+			},
+			trigger: (data) =>
+			{
+				return data.tot > 2147483648;
+			},
+			post: (data) => `rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`
+		}, [sendToMyTelegram]);
+}
 /*Отладка*/
 
 // Отслеживание температуры процессора
