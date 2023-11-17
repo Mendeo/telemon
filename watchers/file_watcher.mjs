@@ -52,7 +52,7 @@ import * as path from 'node:path';
  */
 export function event(input, callbacks)
 {
-	const jitterTime = 1000;
+	const jitterTime = 500;
 	fs.stat(input.path, (err, stats) =>
 	{
 		if (err)
