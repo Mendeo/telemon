@@ -19,7 +19,7 @@ file_watcher(
 	{
 		path: '/var/log/auth.log',
 		header: 'Новый логин на сервер!',
-		pre: (text) => middlewares.tail(text, 2),
+		pre: (text) => middlewares.tail(text, 3),
 		trigger: (text) => text.indexOf('New session') !== -1
 	}, [sendToMyTelegram]);
 
