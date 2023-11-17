@@ -102,10 +102,7 @@ command_watcher(
 				const data = JSON.parse(text).interfaces[0].traffic.day[0];
 				return { rx: data.rx, tx: data.tx, tot: data.rx + data.tx };
 			},
-			trigger: (data) =>
-			{
-				return data.tot > 2147483648;
-			},
+			trigger: (data) => data.tot > 2147483648,
 			post: (data) => `rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`
 		}, [sendToMyTelegram]);
 }
