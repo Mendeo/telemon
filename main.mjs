@@ -9,10 +9,7 @@ import { event as command_watcher } from './watchers/command_watcher.mjs';
  * Мониторинг сервера на Node.js.
  */
 
-//Events list
-/**
- * Оповещение о новой системной почте.
- */
+// Оповещение о новой системной почте.
 file_watcher(
 	{
 		path: '/var/mail',
@@ -20,9 +17,7 @@ file_watcher(
 		post: (text, fPath) => `Файл: ${fPath}\n${text}`
 	}, [sendToMyTelegram]);
 
-/**
- * Оповещения о новых сессиях пользователей.
- */
+//Оповещения о новых сессиях пользователей.
 file_watcher(
 	{
 		path: '/var/log/auth.log',
@@ -31,9 +26,7 @@ file_watcher(
 		trigger: (text) => text.indexOf('New session') !== -1
 	}, [sendToMyTelegram]);
 
-/**
- * Оповещение об изменении статуса райд массива.
- */
+//Оповещение об изменении статуса райд массива.
 file_watcher(
 	{
 		path: '/proc/mdstat',
@@ -41,9 +34,7 @@ file_watcher(
 		timeout: 1800000
 	}, [sendToMyTelegram]);
 
-/**
- * Оповещение о превышение температуры процессора заданного порога.
- */
+// Оповещение о превышение температуры процессора заданного порога.
 command_watcher(
 	{
 		command: 'vcgencmd',
@@ -56,9 +47,7 @@ command_watcher(
 		post: (t) => `t = ${t}°C`
 	}, [sendToMyTelegram]);
 
-/**
- * Оповещение об изменении статуса жёстких дисков (превышение температура и проверка важных SMART параметров).
-*/
+//Оповещение об изменении статуса жёстких дисков (превышение температура и проверка важных SMART параметров).
 {
 	setDiskWatcher('/dev/sda');
 	setDiskWatcher('/dev/sdb');
@@ -82,9 +71,7 @@ command_watcher(
 	}
 }
 
-/**
- * Оповещение о повышенной нагурзки на ЦП.
- */
+// Оповещение о повышенной нагурзки на ЦП.
 command_watcher(
 	{
 		command: 'uptime',
@@ -97,7 +84,7 @@ command_watcher(
 
 /*Отладка*/
 
-/* Отслеживание температуры процессора */
+// Отслеживание температуры процессора
 // import { send as sendToTcp } from './senders/tcp/send.mjs';
 // command_watcher(
 // 	{
