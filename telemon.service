@@ -1,0 +1,11 @@
+[Unit]
+Description=Watching for system parameters and sending messages if warnings
+After=network.target
+
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/local/bin/node /usr/local/lib/telemon/main.mjs
+
+[Install]
+WantedBy=multi-user.target
