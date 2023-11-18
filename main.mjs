@@ -116,25 +116,25 @@ command_watcher(
 			},
 			trigger: function(data)
 			{
-				if (data.tot > 2 * s1GiB && sizeAlreadySent < 2)
+				if (data.tot > 2 * s1GiB && data.tot <= 4 * s1GiB && sizeAlreadySent < 2)
 				{
 					this.header = header(2);
 					sizeAlreadySent = 2;
 					return true;
 				}
-				if (data.tot > 4 * s1GiB && sizeAlreadySent < 4)
+				if (data.tot > 4 * s1GiB && data.tot <= 6 * s1GiB && sizeAlreadySent < 4)
 				{
 					this.header = header(4);
 					sizeAlreadySent = 4;
 					return true;
 				}
-				if (data.tot > 6 * s1GiB && sizeAlreadySent < 6)
+				if (data.tot > 6 * s1GiB && data.tot <= 8 * s1GiB  && sizeAlreadySent < 6)
 				{
 					this.header = header(6);
 					sizeAlreadySent = 6;
 					return true;
 				}
-				if (data.tot > 8 * s1GiB && sizeAlreadySent < 8)
+				if (data.tot > 8 * s1GiB && data.tot <= 10 * s1GiB  && sizeAlreadySent < 8)
 				{
 					this.header = header(8);
 					sizeAlreadySent = 8;
@@ -145,7 +145,6 @@ command_watcher(
 					this.header = header(10) + ' Это последнее сообщение о превышении трафика на сегодня.';
 					sizeAlreadySent = 0;
 					this.timeout = getTommorow();
-					console.log(this.timeout);
 					return true;
 				}
 				return false;
