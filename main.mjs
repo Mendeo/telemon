@@ -84,26 +84,75 @@ command_watcher(
 
 // Оповещение о превышении трафика.
 {
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = now.getMonth();
-	const date = now.getDate();
-	const tomorrow = new Date(year, month, date + 1);
-	const delta = tomorrow - now;
+	const s1GiB = 1073741824;
+	let sizeAlreadySent = 0;
+
+	function getTommorow()
+	{
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = now.getMonth();
+		const date = now.getDate();
+		const tomorrow = new Date(year, month, date + 1);
+		return tomorrow - now + 1;
+	}
+
+	function header(size)
+	{
+		return `Превышено ${size} ГиБ трафика.`;
+	}
+
 	command_watcher(
 		{
 			command: 'vnstat',
 			args: ['-i', 'eth0', '--json', 'd', '1'],
 			period: 1200000,
-			timeout: delta,
-			header: 'Превышено 2 ГиБ траффика.',
+			timeout: null,
+			header: null,
 			pre: (text) =>
 			{
 				const data = JSON.parse(text).interfaces[0].traffic.day[0];
 				return { rx: data.rx, tx: data.tx, tot: data.rx + data.tx };
 			},
-			trigger: (data) => data.tot > 2147483648,
-			post: (data) => `rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`
+			trigger: function(data)
+			{
+				if (data.tot > 2 * s1GiB && sizeAlreadySent < 2)
+				{
+					this.header = header(2);
+					sizeAlreadySent = 2;
+					return true;
+				}
+				if (data.tot > 4 * s1GiB && sizeAlreadySent < 4)
+				{
+					this.header = header(4);
+					sizeAlreadySent = 4;
+					return true;
+				}
+				if (data.tot > 6 * s1GiB && sizeAlreadySent < 6)
+				{
+					this.header = header(6);
+					sizeAlreadySent = 6;
+					return true;
+				}
+				if (data.tot > 8 * s1GiB && sizeAlreadySent < 8)
+				{
+					this.header = header(6);
+					sizeAlreadySent = 8;
+					return true;
+				}
+				if (data.tot > 10 * s1GiB)
+				{
+					this.header = header(10) + 'Это последнее сообщение о превышении трафика на сегодня.';
+					sizeAlreadySent = 0;
+					this.timeout = getTommorow();
+					return true;
+				}
+				return false;
+			},
+			post: (data) =>
+			{
+				`rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`;
+			}
 		}, [sendToMyTelegram]);
 }
 /*Отладка*/
