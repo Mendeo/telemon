@@ -9,7 +9,7 @@ import { event as command_watcher } from './watchers/command_watcher.mjs';
  * Мониторинг сервера на Node.js.
  */
 
-// Оповещение о новой системной почте.
+//Оповещение о новой системной почте.
 file_watcher(
 	{
 		path: '/var/mail',
@@ -136,23 +136,21 @@ command_watcher(
 				}
 				if (data.tot > 8 * s1GiB && sizeAlreadySent < 8)
 				{
-					this.header = header(6);
+					this.header = header(8);
 					sizeAlreadySent = 8;
 					return true;
 				}
 				if (data.tot > 10 * s1GiB)
 				{
-					this.header = header(10) + 'Это последнее сообщение о превышении трафика на сегодня.';
+					this.header = header(10) + ' Это последнее сообщение о превышении трафика на сегодня.';
 					sizeAlreadySent = 0;
 					this.timeout = getTommorow();
+					console.log(this.timeout);
 					return true;
 				}
 				return false;
 			},
-			post: (data) =>
-			{
-				`rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`;
-			}
+			post: (data) => `rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`
 		}, [sendToMyTelegram]);
 }
 /*Отладка*/
