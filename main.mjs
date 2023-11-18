@@ -97,7 +97,7 @@ command_watcher(
 		return tomorrow - now + 1;
 	}
 
-	function header(size)
+	function getHeader(size)
 	{
 		return `Превышено ${size} ГиБ трафика.`;
 	}
@@ -118,31 +118,31 @@ command_watcher(
 			{
 				if (data.tot > 2 * s1GiB && data.tot <= 4 * s1GiB && sizeAlreadySent < 2)
 				{
-					this.header = header(2);
+					this.header = getHeader(2);
 					sizeAlreadySent = 2;
 					return true;
 				}
 				if (data.tot > 4 * s1GiB && data.tot <= 6 * s1GiB && sizeAlreadySent < 4)
 				{
-					this.header = header(4);
+					this.header = getHeader(4);
 					sizeAlreadySent = 4;
 					return true;
 				}
 				if (data.tot > 6 * s1GiB && data.tot <= 8 * s1GiB  && sizeAlreadySent < 6)
 				{
-					this.header = header(6);
+					this.header = getHeader(6);
 					sizeAlreadySent = 6;
 					return true;
 				}
 				if (data.tot > 8 * s1GiB && data.tot <= 10 * s1GiB  && sizeAlreadySent < 8)
 				{
-					this.header = header(8);
+					this.header = getHeader(8);
 					sizeAlreadySent = 8;
 					return true;
 				}
 				if (data.tot > 10 * s1GiB)
 				{
-					this.header = header(10) + ' Это последнее сообщение о превышении трафика на сегодня.';
+					this.header = getHeader(10) + ' Это последнее сообщение о превышении трафика на сегодня.';
 					sizeAlreadySent = 0;
 					this.timeout = getTommorow();
 					return true;
