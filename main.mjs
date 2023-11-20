@@ -86,6 +86,7 @@ command_watcher(
 {
 	const s1GiB = 1073741824;
 	let sizeAlreadySent = 0;
+	let currentSize = 0;
 
 	function getTommorow()
 	{
@@ -116,6 +117,8 @@ command_watcher(
 			},
 			trigger: function(data)
 			{
+				if (data.tot < currentSize) sizeAlreadySent = 0;
+				currentSize = data.tot;
 				if (data.tot > 2 * s1GiB && data.tot <= 4 * s1GiB && sizeAlreadySent < 2)
 				{
 					this.header = getHeader(2);
