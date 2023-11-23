@@ -43,7 +43,7 @@ command_watcher(
 		header: 'Температура процессора превысила 65 градусов!',
 		timeout: 1800000,
 		pre: middlewares.parseRPItemp,
-		trigger: (t) => Number(t) >= 65,
+		trigger: (t) => Number(t) >= 70,
 		post: (t) => `t = ${t}°C`
 	}, [sendToMyTelegram]);
 
