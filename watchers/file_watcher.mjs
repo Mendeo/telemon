@@ -57,6 +57,7 @@ export function event(input, callbacks)
 	{
 		if (err)
 		{
+			console.log(err);
 			for (let callback of callbacks) callback(err);
 		}
 		else
@@ -64,9 +65,16 @@ export function event(input, callbacks)
 			const isFile = stats.isFile();
 			let isWatchingEnabled = true;
 			let tid = null;
-			fs.watch(input.path, (eventType, filename)=>
+			const watcher = fs.watch(input.path, (eventType, filename) =>
 			{
-				if (eventType === 'change' && tid === null && isWatchingEnabled)
+				if (isFile && eventType === 'rename')
+				{
+					const msg = `The ${input.path} file has been moved, so telemon will stop watching.`;
+					console.log(msg);
+					for (let callback of callbacks) callback(msg);
+					watcher.close();
+				}
+				else if (eventType === 'change' && tid === null && isWatchingEnabled)
 				{
 					tid = setTimeout(() =>
 					{
