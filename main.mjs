@@ -20,9 +20,13 @@ file_watcher(
 //Оповещения о новых сессиях пользователей.
 file_watcher(
 	{
-		path: '/var/log/auth.log',
+		path: '/var/log',
 		header: 'Новый логин на сервер!',
-		pre: (text) => middlewares.tail(text, 3),
+		pre: (text, fPath, filename) =>
+		{
+			if (filename === 'auth.log') return middlewares.tail(text, 3);
+			return '';
+		},
 		trigger: (text) => text.indexOf('New session') !== -1
 	}, [sendToMyTelegram]);
 
