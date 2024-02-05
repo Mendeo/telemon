@@ -31,11 +31,13 @@ file_watcher(
 	}, [sendToMyTelegram]);
 
 //Оповещение об изменении статуса райд массива.
-file_watcher(
+command_watcher(
 	{
-		path: '/proc/mdstat',
-		header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.',
-		timeout: 1800000
+		command: 'cat',
+		args: ['/proc/mdstat'],
+		period: 60000,
+		header: 'Состояние рэйда изменилось. Следующая проверка через час.',
+		timeout: 3600000
 	}, [sendToMyTelegram]);
 
 // [ Только для Raspberry Pi ] Оповещение о том, что температура процессора превысила заданный порог.
