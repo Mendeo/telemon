@@ -37,14 +37,7 @@ command_watcher(
 		args: ['/proc/mdstat'],
 		period: 60000,
 		header: 'Состояние рэйда изменилось. Следующая проверка через час.',
-		pre: (t) =>
-		{
-			const bitmapWord = t.indexOf('bitmap:');
-			if (bitmapWord === -1) return t;
-			const pagesWord = t.indexOf('pages', bitmapWord + 8);
-			if (pagesWord === -1) return t;
-			return t.slice(0, bitmapWord + 8) + ' [удалено]/[удалено] ' + t.slice(pagesWord);
-		},
+		pre: (t) => t.replace(/(?<=bitmap:)\s\d*\/\d*\s(?=pages)/g, ' [удалено]/[удалено] '),
 		timeout: 3600000
 	}, [sendToMyTelegram]);
 
