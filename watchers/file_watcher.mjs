@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 /**
- * Модулья для наблюдения за изменениями в заданной каталоге или конкретном файле.
+ * Модуль для наблюдения за изменениями в заданном каталоге или конкретном файле.
  * @module watchers/file_watcher
  * @exports event
 */
