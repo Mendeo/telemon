@@ -21,6 +21,7 @@ export function parseLoadAverageFromUptime(str, n) //n - Level (1, 2 or 3);
 	const data = str.slice(index, -1).split(', ');
 	return data[n - 1];
 }
+
 export function getStrSize(size)
 {
 	if (size === 0) return '0 ' + 'Б';
