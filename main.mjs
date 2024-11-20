@@ -9,6 +9,8 @@ import { event as command_watcher } from './watchers/command_watcher.mjs';
  * Мониторинг сервера на Node.js.
  */
 
+sendToMyTelegram('Сервер включился.');
+
 //Оповещение о новой системной почте.
 file_watcher(
 	{
