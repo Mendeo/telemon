@@ -126,10 +126,11 @@ command_watcher(
 		return `Превышено ${size} ГиБ трафика.`;
 	}
 
+	//Не забыть в команде подставить нужное имя интерфейса!
 	command_watcher(
 		{
 			command: 'vnstat',
-			args: ['-i', 'eth0', '--json', 'd', '1'],
+			args: ['-i', 'enp1s0', '--json', 'd', '1'],
 			period: 1200000,
 			timeout: null,
 			header: null,
