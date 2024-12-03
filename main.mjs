@@ -43,17 +43,31 @@ command_watcher(
 		timeout: 3600000
 	}, [sendToMyTelegram]);
 
-// [ Только для Raspberry Pi ] Оповещение о том, что температура процессора превысила заданный порог.
+// Оповещение о том, что температура процессора превысила заданный порог.
+//[ Только для Raspberry Pi ]
+// command_watcher(
+// 	{
+// 		command: 'vcgencmd',
+// 		args: ['measure_temp'],
+// 		period: 30000,
+// 		header: 'Температура процессора превысила 70 градусов!',
+// 		timeout: 1800000,
+// 		pre: middlewares.parseRPItemp,
+// 		trigger: t => Number(t) >= 70,
+// 		post: t => `t = ${t}°C`
+// 	}, [sendToMyTelegram]);
+
+// [ Более универсальный способ через sysfs ]
 command_watcher(
 	{
-		command: 'vcgencmd',
-		args: ['measure_temp'],
+		command: 'cat',
+		args: ['/sys/class/thermal/thermal_zone0/temp'],
 		period: 30000,
 		header: 'Температура процессора превысила 70 градусов!',
 		timeout: 1800000,
-		pre: middlewares.parseRPItemp,
-		trigger: (t) => Number(t) >= 70,
-		post: (t) => `t = ${t}°C`
+		pre: raw => Number(raw) / 1000,
+		trigger: t => t >= 70,
+		post: t => `t = ${t}°C`
 	}, [sendToMyTelegram]);
 
 //Оповещение об изменении статуса жёстких дисков (превышение температура и проверка важных SMART параметров).
