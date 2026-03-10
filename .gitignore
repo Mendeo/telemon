@@ -3,3 +3,4 @@ credentials.json
 /test
 nohup.out
 test.js
+package-lock.json
