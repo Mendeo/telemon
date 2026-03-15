@@ -9,7 +9,12 @@ import { event as command_watcher } from './watchers/command_watcher.mjs';
  * Мониторинг сервера на Node.js.
  */
 
-sendToMyTelegram('Сервер включился.');
+const senders = [sendToMyTelegram];
+
+for (let s of senders)
+{
+	s('Сервер включился.');
+}
 
 //Оповещение о новой системной почте.
 file_watcher(
@@ -17,7 +22,7 @@ file_watcher(
 		path: '/var/mail',
 		header: 'Новое письмо!',
 		post: (text, fPath) => `Файл: ${fPath}\n${text}`
-	}, [sendToMyTelegram]);
+	}, senders);
 
 //Оповещения о новых сессиях пользователей.
 file_watcher(
@@ -30,7 +35,7 @@ file_watcher(
 			return '';
 		},
 		trigger: (text) => text.indexOf('New session') !== -1
-	}, [sendToMyTelegram]);
+	}, senders);
 
 //Оповещение об изменении статуса райд массива.
 command_watcher(
@@ -41,7 +46,7 @@ command_watcher(
 		header: 'Состояние рэйда изменилось. Следующая проверка через час.',
 		pre: (t) => t.replace(/(?<=bitmap:)\s\d*\/\d*\s(?=pages)/g, ' [удалено]/[удалено] ').replace(/(?<=pages\s)\[.*?\]/g, '[удалено]'),
 		timeout: 3600000
-	}, [sendToMyTelegram]);
+	}, senders);
 
 // Оповещение о том, что температура процессора превысила заданный порог.
 //[ Только для Raspberry Pi ]
@@ -55,7 +60,7 @@ command_watcher(
 // 		pre: middlewares.parseRPItemp,
 // 		trigger: t => Number(t) >= 70,
 // 		post: t => `t = ${t}°C`
-// 	}, [sendToMyTelegram]);
+// 	}, senders);
 
 // [ Более универсальный способ через sysfs ]
 command_watcher(
@@ -68,7 +73,7 @@ command_watcher(
 		pre: raw => Number(raw) / 1000,
 		trigger: t => t >= 70,
 		post: t => `t = ${t}°C`
-	}, [sendToMyTelegram]);
+	}, senders);
 
 //Оповещение об изменении статуса жёстких дисков (превышение температура и проверка важных SMART параметров).
 {
@@ -90,7 +95,7 @@ command_watcher(
 					this.post = test.post;
 					return test.result;
 				},
-			}, [sendToMyTelegram]);
+			}, senders);
 	}
 }
 
@@ -103,7 +108,7 @@ command_watcher(
 		header: 'Повышенная нагрузка на ЦП',
 		pre: (text) => middlewares.parseLoadAverageFromUptime(text, 2),
 		trigger: (la2) => Number(la2) > 4,
-	}, [sendToMyTelegram]);
+	}, senders);
 
 // Оповещение о превышении трафика.
 {
@@ -177,7 +182,7 @@ command_watcher(
 				return false;
 			},
 			post: (data) => `rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`
-		}, [sendToMyTelegram]);
+		}, senders);
 }
 /*Отладка*/
 
