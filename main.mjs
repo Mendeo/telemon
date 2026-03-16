@@ -16,7 +16,7 @@ const senders = [sendToEmail];
 	command_watcher({
 		period: 0, //Однократный запуск команды
 		command: 'fastfetch',
-		args: ['--logo', 'none', '--pipe', '--structure-disabled', 'Colors'],
+		args: ['--logo', 'none', '--pipe'], //'--structure-disabled', 'Colors' Добавить потом
 		subject: 'Сервер включился!'
 	}, senders);
 }
