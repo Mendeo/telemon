@@ -46,7 +46,7 @@ import * as path from 'node:path';
  * @param {pre} [input.pre] - Функция предобработки содержимого файла, в котором обнаружены изменения (до вызова функции trigger).
  * @param {trigger} [input.trigger] - Функция, для принятия решения о том, сообщать об обнаруженном изменении в файле или нет.
  * @param {post} [input.post] - Функция для постобработки содержимого файла (после вызова функции trigger).
- * @param {string} [input.header] - Заголовок. Добавляется к финальному сообщению.
+ * @param {string} [input.subject] - Заголовок. Добавляется к финальному сообщению.
  * @param {number} [input.timeout] - Время (мс), на которое следует прервать отслеживание изменений, после отправки очередного сообщения.
  * @param {callback[]} callbacks - Массив функций обратного вызова, куда будет отправляться сообщение об изменениях в директории или файле.
  */
@@ -70,8 +70,12 @@ export function event(input, callbacks)
 				if (isFile && eventType === 'rename')
 				{
 					const msg = `The ${input.path} file has been moved, so telemon will stop watching.`;
+					const subject = 'Watcher warning!';
 					console.log(msg);
-					for (let callback of callbacks) callback(msg);
+					for (let callback of callbacks)
+					{
+						if (typeof callback === 'function') callback(subject, msg);
+					}
 					watcher.close();
 				}
 				else if (eventType === 'change' && tid === null && isWatchingEnabled)
@@ -89,8 +93,10 @@ export function event(input, callbacks)
 							if (trigger)
 							{
 								if (input.post) data = input.post(data, fPath, filename);
-								const msg = `${input.header ? input.header + '\n' : ''}${data}`;
-								for (let callback of callbacks) callback(msg);
+								for (let callback of callbacks)
+								{
+									if (typeof callback === 'function') callback(input.subject, data);
+								}
 								if (input.timeout > 0)
 								{
 									isWatchingEnabled = false;

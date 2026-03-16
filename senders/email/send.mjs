@@ -2,10 +2,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'url';
+import * as nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const nodemailer = require("nodemailer");
 
 /**
  * Модуль отправки сообщений в телеграм
@@ -21,22 +21,38 @@ const nodemailer = require("nodemailer");
  * @property {string} to - Кому посылать сообщение
 */
 const credentials = JSON.parse(fs.readFileSync(path.join(__dirname, 'credentials.json')).toString());
+const transporter = nodemailer.createTransport(
+	{
+		host: credentials.smtp,
+		port: credentials.port,
+		secure: true,
+		auth:
+		{
+			user: credentials.login,
+			pass: credentials.password,
+		},
+	});
 
 /**
- * Отправляет заданное сообщение в телеграм. Куда отправлять определяется в переменной credentials
- * @param {string} msg - Текст сообщения
+ * Отправляет заданное сообщение на электронную почту.
+ * @param {string} subject - Тема письма
+ * @param {string} msg - Текст письма
  */
-export function send(msg)
+export function send(subject, msg)
 {
-	sendToTelegram(msg, credentials.bot_token, credentials.chat_id, (err) =>
+	const mailDetails =
 	{
-		if (err)
-		{
-			console.log(`Request to Telegram server failed:\n${err}`);
-		}
-		else
-		{
-			console.log('Message sent.');
-		}
+		from: credentials.from,
+		to: credentials.to,
+		subject,
+		text: msg,
+	};
+	transporter.sendMail(mailDetails).then((info)=>
+	{
+		console.log(`The message ${info.messageId} was sent successfully to e-mail`);
+	},
+	(err) =>
+	{
+		console.log(`Error while sending to e-mail:\n${err}`);
 	});
 }

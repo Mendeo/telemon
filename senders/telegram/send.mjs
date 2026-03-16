@@ -23,11 +23,12 @@ const credentials = JSON.parse(fs.readFileSync(path.join(__dirname, 'credentials
 
 /**
  * Отправляет заданное сообщение в телеграм. Куда отправлять определяется в переменной credentials
+ * @param {string} subject - Заголовок собщения
  * @param {string} msg - Текст сообщения
  */
-export function send(msg)
+export function send(subject, msg)
 {
-	sendToTelegram(msg, credentials.bot_token, credentials.chat_id, (err) =>
+	sendToTelegram((subject ? subject + '\n' : '') + msg, credentials.bot_token, credentials.chat_id, (err) =>
 	{
 		if (err)
 		{
@@ -35,7 +36,7 @@ export function send(msg)
 		}
 		else
 		{
-			console.log('Message sent.');
+			console.log('The message was sent successfully to Telegram');
 		}
 	});
 }

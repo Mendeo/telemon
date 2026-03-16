@@ -2,6 +2,7 @@
 import * as middlewares from './middlewares.mjs';
 import { testSmart } from './triggers.mjs';
 import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
+import { send as sendToEmail } from './senders/email/send.mjs';
 import { event as file_watcher } from './watchers/file_watcher.mjs';
 import { event as command_watcher } from './watchers/command_watcher.mjs';
 
@@ -9,18 +10,18 @@ import { event as command_watcher } from './watchers/command_watcher.mjs';
  * Мониторинг сервера на Node.js.
  */
 
-const senders = [sendToMyTelegram];
+const senders = [sendToMyTelegram, sendToEmail];
 
 for (let s of senders)
 {
-	s('Сервер включился.');
+	s('Сервер включился.', '');
 }
 
 //Оповещение о новой системной почте.
 file_watcher(
 	{
 		path: '/var/mail',
-		header: 'Новое письмо!',
+		subject: 'Новое письмо!',
 		post: (text, fPath) => `Файл: ${fPath}\n${text}`
 	}, senders);
 
@@ -28,7 +29,7 @@ file_watcher(
 file_watcher(
 	{
 		path: '/var/log',
-		header: 'Новый логин на сервер!',
+		subject: 'Новый логин на сервер!',
 		pre: (text, fPath, filename) =>
 		{
 			if (filename === 'auth.log') return middlewares.tail(text, 3);
@@ -43,7 +44,7 @@ command_watcher(
 		command: 'cat',
 		args: ['/proc/mdstat'],
 		period: 60000,
-		header: 'Состояние рэйда изменилось. Следующая проверка через час.',
+		subject: 'Состояние рэйда изменилось. Следующая проверка через час.',
 		pre: (t) => t.replace(/(?<=bitmap:)\s\d*\/\d*\s(?=pages)/g, ' [удалено]/[удалено] ').replace(/(?<=pages\s)\[.*?\]/g, '[удалено]'),
 		timeout: 3600000
 	}, senders);
@@ -55,7 +56,7 @@ command_watcher(
 // 		command: 'vcgencmd',
 // 		args: ['measure_temp'],
 // 		period: 30000,
-// 		header: 'Температура процессора превысила 70 градусов!',
+// 		subject: 'Температура процессора превысила 70 градусов!',
 // 		timeout: 1800000,
 // 		pre: middlewares.parseRPItemp,
 // 		trigger: t => Number(t) >= 70,
@@ -68,7 +69,7 @@ command_watcher(
 		command: 'cat',
 		args: ['/sys/class/thermal/thermal_zone0/temp'],
 		period: 30000,
-		header: 'Температура процессора превысила 70 градусов!',
+		subject: 'Температура процессора превысила 70 градусов!',
 		timeout: 1800000,
 		pre: raw => Number(raw) / 1000,
 		trigger: t => t >= 70,
@@ -87,7 +88,7 @@ command_watcher(
 				args: ['-a', '-j', '-d', 'sat', disk],
 				period: 300000,
 				timeout: 1800000,
-				header: 'Важные изменения SMART!',
+				subject: 'Важные изменения SMART!',
 				post: null,
 				trigger: function(smartJson)
 				{
@@ -105,7 +106,7 @@ command_watcher(
 		command: 'uptime',
 		period: 150000,
 		timeout: 1800000,
-		header: 'Повышенная нагрузка на ЦП',
+		subject: 'Повышенная нагрузка на ЦП',
 		pre: (text) => middlewares.parseLoadAverageFromUptime(text, 2),
 		trigger: (la2) => Number(la2) > 4,
 	}, senders);
@@ -126,7 +127,7 @@ command_watcher(
 		return tomorrow - now + 1;
 	}
 
-	function getHeader(size)
+	function getSubject(size)
 	{
 		return `Превышено ${size} ГиБ трафика.`;
 	}
@@ -138,7 +139,7 @@ command_watcher(
 			args: ['-i', 'enp1s0', '--json', 'd', '1'],
 			period: 1200000,
 			timeout: null,
-			header: null,
+			subject: null,
 			pre: (text) =>
 			{
 				const data = JSON.parse(text).interfaces[0].traffic.day[0];
@@ -150,31 +151,31 @@ command_watcher(
 				currentSize = data.tot;
 				if (data.tot > 2 * s1GiB && data.tot <= 4 * s1GiB && sizeAlreadySent < 2)
 				{
-					this.header = getHeader(2);
+					this.subject = getSubject(2);
 					sizeAlreadySent = 2;
 					return true;
 				}
 				if (data.tot > 4 * s1GiB && data.tot <= 6 * s1GiB && sizeAlreadySent < 4)
 				{
-					this.header = getHeader(4);
+					this.subject = getSubject(4);
 					sizeAlreadySent = 4;
 					return true;
 				}
 				if (data.tot > 6 * s1GiB && data.tot <= 8 * s1GiB  && sizeAlreadySent < 6)
 				{
-					this.header = getHeader(6);
+					this.subject = getSubject(6);
 					sizeAlreadySent = 6;
 					return true;
 				}
 				if (data.tot > 8 * s1GiB && data.tot <= 10 * s1GiB  && sizeAlreadySent < 8)
 				{
-					this.header = getHeader(8);
+					this.subject = getSubject(8);
 					sizeAlreadySent = 8;
 					return true;
 				}
 				if (data.tot > 10 * s1GiB)
 				{
-					this.header = getHeader(10) + ' Это последнее сообщение о превышении трафика на сегодня.';
+					this.subject = getSubject(10) + ' Это последнее сообщение о превышении трафика на сегодня.';
 					sizeAlreadySent = 0;
 					this.timeout = getTommorow();
 					return true;
@@ -193,7 +194,7 @@ command_watcher(
 // 		command: 'bash',
 // 		args: ['test/test.sh'],
 // 		period: 3000,
-// 		header: 'Температура процессора превысила 65 градусов!',
+// 		subject: 'Температура процессора превысила 65 градусов!',
 // 		timeout: 10000,
 // 		pre: middlewares.parseRPItemp,
 // 		trigger: (t) => Number(t) >= 65,
