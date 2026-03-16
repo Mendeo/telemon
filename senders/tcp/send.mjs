@@ -13,7 +13,7 @@ import * as net from 'node:net';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/** В эту переменную считываются значения bot token и chat_id из файла credentials.json
+/** В эту переменную считываются значения сетевой адрес и порт из файла credentials.json
  * Шаблон credentials.json представлен в credentials.template.json
  * @type {Object}
  * @property {string} address - Сетевой адрес TCP сервера.
