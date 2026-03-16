@@ -59,7 +59,10 @@ export function event(input, callbacks)
 	{
 		console.log('tcp_watcher: Server error', err.message);
 	});
-	server.listen(input.port);
+	server.listen({
+		port: input.port,
+		host: 'localhost'
+	});
 }
 
 function getSubjectAndOther(text)
