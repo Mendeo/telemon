@@ -55,16 +55,16 @@ export function event(input, callbacks)
 
 	function onexec(err, data)
 	{
-		timerId = setTimeout(() => execCommand(onexec), input.period);
+		if (input.period > 0) timerId = setTimeout(() => execCommand(onexec), input.period);
 		if (err)
 		{
 			send(err);
 		}
 		else
 		{
-			if (input.pre) data = input.pre(data);
+			if (typeof input.pre === 'function') data = input.pre(data);
 			if (dataOld === null) dataOld = data;
-			if (dataOld !== data)
+			if (dataOld !== data || input.period === 0)
 			{
 				dataOld = data;
 				send(data);
@@ -73,10 +73,10 @@ export function event(input, callbacks)
 		function send(data)
 		{
 			let trigger = true;
-			if (input.trigger) trigger = input.trigger(data);
+			if (typeof input.trigger === 'function') trigger = input.trigger(data);
 			if (trigger)
 			{
-				if (input.post) data = input.post(data);
+				if (typeof input.post === 'function') data = input.post(data);
 				for (let callback of callbacks)
 				{
 					if (typeof callback === 'function') callback(input.subject, data);

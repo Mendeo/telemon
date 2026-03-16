@@ -58,7 +58,10 @@ export function event(input, callbacks)
 		if (err)
 		{
 			console.log(err);
-			for (let callback of callbacks) callback(err);
+			for (let callback of callbacks)
+			{
+				if (typeof callback === 'function') callback(err);
+			}
 		}
 		else
 		{
@@ -87,12 +90,12 @@ export function event(input, callbacks)
 						if (fs.existsSync(fPath))
 						{
 							let data = fs.readFileSync(fPath).toString();
-							if (input.pre) data = input.pre(data, fPath, filename);
+							if (typeof input.pre === 'function') data = input.pre(data, fPath, filename);
 							let trigger = true;
-							if (input.trigger) trigger = input.trigger(data);
+							if (typeof input.trigger === 'function') trigger = input.trigger(data);
 							if (trigger)
 							{
-								if (input.post) data = input.post(data, fPath, filename);
+								if (typeof input.post === 'function') data = input.post(data, fPath, filename);
 								for (let callback of callbacks)
 								{
 									if (typeof callback === 'function') callback(input.subject, data);

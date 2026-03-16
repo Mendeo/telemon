@@ -12,9 +12,13 @@ import { event as command_watcher } from './watchers/command_watcher.mjs';
 
 const senders = [sendToMyTelegram, sendToEmail];
 
-for (let s of senders)
 {
-	s('Сервер включился.', '');
+	command_watcher({
+		period: 0, //Однократный запуск команды
+		command: 'fastfetch',
+		args: ['--logo', 'none', '--pipe', '--structure-disabled', 'Colors'],
+		subject: 'Сервер включился!'
+	}, senders);
 }
 
 //Оповещение о новой системной почте.
