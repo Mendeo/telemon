@@ -10,7 +10,7 @@ import * as net from 'node:net';
 /**
 * Функция для постобработки текста сообщения.
 * @callback post
-* @param {*} data - Принятый на локалхост текст.
+* @param {string} data - Принятый на локалхост текст.
 * @returns {string} Обработанный текст.
  */
 
