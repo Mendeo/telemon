@@ -31,7 +31,8 @@ import { spawn } from 'child_process';
 /**
  * Функция обратного вызова. Вызывается, чтобы сообщить во внешний код об изменении в результате выполнения заданной команды.
  * @callback callback
- * @param {string} msg - Текст сообщения. Состоит из заголовка и резульатата работы команды после обработки функциями pre и post, если они заданы.
+ * @param {string} subject - Заголовок сообщения.
+ * @param {string} msg - Текст сообщения. Состоит из резульатата работы команды после обработки функциями pre и post, если они заданы.
  */
 
 /**
@@ -58,7 +59,8 @@ export function event(input, callbacks)
 		if (input.period > 0) timerId = setTimeout(() => execCommand(onexec), input.period);
 		if (err)
 		{
-			send(err);
+			console.log(err);
+			sendToSenders(callbacks, 'Error while commnad watcher!', err);
 		}
 		else
 		{
@@ -77,10 +79,7 @@ export function event(input, callbacks)
 			if (trigger)
 			{
 				if (typeof input.post === 'function') data = input.post(data);
-				for (let callback of callbacks)
-				{
-					if (typeof callback === 'function') callback(input.subject, data);
-				}
+				sendToSenders(callbacks, input.subject, data);
 				if (input.timeout > 0)
 				{
 					if (timerId) clearInterval(timerId);
@@ -113,5 +112,13 @@ export function event(input, callbacks)
 			if (error === '') error = null;
 			onexec(error, data);
 		});
+	}
+}
+
+function sendToSenders(senders, subject, msg)
+{
+	for (let sender of senders)
+	{
+		if (typeof sender === 'function') sender(subject, msg);
 	}
 }

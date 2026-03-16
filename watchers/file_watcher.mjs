@@ -36,7 +36,8 @@ import * as path from 'node:path';
 /**
  * Функция обратного вызова. Вызывается, чтобы сообщить во внешний код об изменении в наблюдаемом файле.
  * @callback callback
- * @param {string} msg - Текст сообщения. Состоит из заголовка и содержимого файла после обработки функциями pre и post, если они заданы.
+ * @param {string} subject - Заголовок сообщения.
+ * @param {string} msg - Текст сообщения. Состоит из содержимого файла после обработки функциями pre и post, если они заданы.
  */
 
 /**
@@ -58,10 +59,7 @@ export function event(input, callbacks)
 		if (err)
 		{
 			console.log(err);
-			for (let callback of callbacks)
-			{
-				if (typeof callback === 'function') callback(err);
-			}
+			sendToSenders(callbacks, 'Error while file watcher!', err);
 		}
 		else
 		{
@@ -75,10 +73,7 @@ export function event(input, callbacks)
 					const msg = `The ${input.path} file has been moved, so telemon will stop watching.`;
 					const subject = 'Watcher warning!';
 					console.log(msg);
-					for (let callback of callbacks)
-					{
-						if (typeof callback === 'function') callback(subject, msg);
-					}
+					sendToSenders(callbacks, subject, msg);
 					watcher.close();
 				}
 				else if (eventType === 'change' && tid === null && isWatchingEnabled)
@@ -96,10 +91,7 @@ export function event(input, callbacks)
 							if (trigger)
 							{
 								if (typeof input.post === 'function') data = input.post(data, fPath, filename);
-								for (let callback of callbacks)
-								{
-									if (typeof callback === 'function') callback(input.subject, data);
-								}
+								sendToSenders(callbacks, input.subject, data);
 								if (input.timeout > 0)
 								{
 									isWatchingEnabled = false;
@@ -112,4 +104,12 @@ export function event(input, callbacks)
 			});
 		}
 	});
+}
+
+function sendToSenders(senders, subject, msg)
+{
+	for (let sender of senders)
+	{
+		if (typeof sender === 'function') sender(subject, msg);
+	}
 }
