@@ -29,66 +29,86 @@
             <pre class="prettyprint source linenums"><code>'use strict';
 import * as middlewares from './middlewares.mjs';
 import { testSmart } from './triggers.mjs';
-import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
+//import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
+import { send as sendToEmail } from './senders/email/send.mjs';
 import { event as file_watcher } from './watchers/file_watcher.mjs';
 import { event as command_watcher } from './watchers/command_watcher.mjs';
 
 /**
  * Мониторинг сервера на Node.js.
- * @module main
  */
 
-//Events list
-/**
- * Оповещение о новой системной почте.
- * @static
- */
+const senders = [sendToEmail];
+
+{
+	command_watcher({
+		period: 0, //Однократный запуск команды
+		command: 'fastfetch',
+		args: ['--logo', 'none', '--pipe', '--structure-disabled', 'Colors'],
+		subject: 'Сервер включился!'
+	}, senders);
+}
+
+//Оповещение о новой системной почте.
 file_watcher(
 	{
 		path: '/var/mail',
-		header: 'Новое письмо!',
+		subject: 'Новое письмо!',
 		post: (text, fPath) => `Файл: ${fPath}\n${text}`
-	}, [sendToMyTelegram]);
+	}, senders);
 
-/**
- * Оповещения о новых сессиях пользователей.
- */
+//Оповещения о новых сессиях пользователей.
 file_watcher(
 	{
-		path: '/var/log/auth.log',
-		header: 'Новый логин на сервер!',
-		pre: (text) => middlewares.tail(text, 3),
+		path: '/var/log',
+		subject: 'Новый логин на сервер!',
+		pre: (text, fPath, filename) =>
+		{
+			if (filename === 'auth.log') return middlewares.tail(text, 3);
+			return '';
+		},
 		trigger: (text) => text.indexOf('New session') !== -1
-	}, [sendToMyTelegram]);
+	}, senders);
 
-/**
- * Оповещение об изменении статуса райд массива.
- */
-file_watcher(
-	{
-		path: '/proc/mdstat',
-		header: 'Состояние рэйда изменилось. Следующая проверка через пол часа.',
-		timeout: 1800000
-	}, [sendToMyTelegram]);
-
-/**
- * Оповещение о превышение температуры процессора заданного порога.
- */
+//Оповещение об изменении статуса райд массива.
 command_watcher(
 	{
-		command: 'vcgencmd',
-		args: ['measure_temp'],
-		period: 30000,
-		header: 'Температура процессора превысила 65 градусов!',
-		timeout: 1800000,
-		pre: middlewares.parseRPItemp,
-		trigger: (t) => Number(t) >= 65,
-		post: (t) => `t = ${t}°C`
-	}, [sendToMyTelegram]);
+		command: 'cat',
+		args: ['/proc/mdstat'],
+		period: 60000,
+		subject: 'Состояние рэйда изменилось. Следующая проверка через час.',
+		pre: (t) => t.replace(/(?&lt;=bitmap:)\s\d*\/\d*\s(?=pages)/g, ' [удалено]/[удалено] ').replace(/(?&lt;=pages\s)\[.*?\]/g, '[удалено]'),
+		timeout: 3600000
+	}, senders);
 
-/**
- * Оповещение об изменении статуса жёстких дисков (превышение температура и проверка важных SMART параметров).
-*/
+// Оповещение о том, что температура процессора превысила заданный порог.
+//[ Только для Raspberry Pi ]
+// command_watcher(
+// 	{
+// 		command: 'vcgencmd',
+// 		args: ['measure_temp'],
+// 		period: 30000,
+// 		subject: 'Температура процессора превысила 70 градусов!',
+// 		timeout: 1800000,
+// 		pre: middlewares.parseRPItemp,
+// 		trigger: t => Number(t) >= 70,
+// 		post: t => `t = ${t}°C`
+// 	}, senders);
+
+// [ Более универсальный способ через sysfs ]
+command_watcher(
+	{
+		command: 'cat',
+		args: ['/sys/class/thermal/thermal_zone0/temp'],
+		period: 30000,
+		subject: 'Температура процессора превысила 70 градусов!',
+		timeout: 1800000,
+		pre: raw => Number(raw) / 1000,
+		trigger: t => t >= 70,
+		post: t => `t = ${t}°C`
+	}, senders);
+
+//Оповещение об изменении статуса жёстких дисков (превышение температура и проверка важных SMART параметров).
 {
 	setDiskWatcher('/dev/sda');
 	setDiskWatcher('/dev/sdb');
@@ -100,7 +120,7 @@ command_watcher(
 				args: ['-a', '-j', '-d', 'sat', disk],
 				period: 300000,
 				timeout: 1800000,
-				header: 'Важные изменения SMART!',
+				subject: 'Важные изменения SMART!',
 				post: null,
 				trigger: function(smartJson)
 				{
@@ -108,33 +128,105 @@ command_watcher(
 					this.post = test.post;
 					return test.result;
 				},
-			}, [sendToMyTelegram]);
+			}, senders);
 	}
 }
 
-/**
- * Оповещение о повышенной нагурзки на ЦП.
- */
+// Оповещение о повышенной нагурзки на ЦП.
 command_watcher(
 	{
 		command: 'uptime',
 		period: 150000,
 		timeout: 1800000,
-		header: 'Повышенная нагрузка на ЦП',
+		subject: 'Повышенная нагрузка на ЦП',
 		pre: (text) => middlewares.parseLoadAverageFromUptime(text, 2),
 		trigger: (la2) => Number(la2) > 4,
-	}, [sendToMyTelegram]);
+	}, senders);
 
+// Оповещение о превышении трафика.
+{
+	const s1GiB = 1073741824;
+	let sizeAlreadySent = 0;
+	let currentSize = 0;
+
+	function getTommorow()
+	{
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = now.getMonth();
+		const date = now.getDate();
+		const tomorrow = new Date(year, month, date + 1);
+		return tomorrow - now + 1;
+	}
+
+	function getSubject(size)
+	{
+		return `Превышено ${size} ГиБ трафика.`;
+	}
+
+	//Не забыть в команде подставить нужное имя интерфейса!
+	command_watcher(
+		{
+			command: 'vnstat',
+			args: ['-i', 'enp1s0', '--json', 'd', '1'],
+			period: 1200000,
+			timeout: null,
+			subject: null,
+			pre: (text) =>
+			{
+				const data = JSON.parse(text).interfaces[0].traffic.day[0];
+				return { rx: data.rx, tx: data.tx, tot: data.rx + data.tx };
+			},
+			trigger: function(data)
+			{
+				if (data.tot &lt; currentSize) sizeAlreadySent = 0;
+				currentSize = data.tot;
+				if (data.tot > 2 * s1GiB &amp;&amp; data.tot &lt;= 4 * s1GiB &amp;&amp; sizeAlreadySent &lt; 2)
+				{
+					this.subject = getSubject(2);
+					sizeAlreadySent = 2;
+					return true;
+				}
+				if (data.tot > 4 * s1GiB &amp;&amp; data.tot &lt;= 6 * s1GiB &amp;&amp; sizeAlreadySent &lt; 4)
+				{
+					this.subject = getSubject(4);
+					sizeAlreadySent = 4;
+					return true;
+				}
+				if (data.tot > 6 * s1GiB &amp;&amp; data.tot &lt;= 8 * s1GiB  &amp;&amp; sizeAlreadySent &lt; 6)
+				{
+					this.subject = getSubject(6);
+					sizeAlreadySent = 6;
+					return true;
+				}
+				if (data.tot > 8 * s1GiB &amp;&amp; data.tot &lt;= 10 * s1GiB  &amp;&amp; sizeAlreadySent &lt; 8)
+				{
+					this.subject = getSubject(8);
+					sizeAlreadySent = 8;
+					return true;
+				}
+				if (data.tot > 10 * s1GiB)
+				{
+					this.subject = getSubject(10) + ' Это последнее сообщение о превышении трафика на сегодня.';
+					sizeAlreadySent = 0;
+					this.timeout = getTommorow();
+					return true;
+				}
+				return false;
+			},
+			post: (data) => `rx: ${middlewares.getStrSize(data.rx)}, tx: ${middlewares.getStrSize(data.tx)}, total: ${middlewares.getStrSize(data.tot)}`
+		}, senders);
+}
 /*Отладка*/
 
-/* Отслеживание температуры процессора */
+// Отслеживание температуры процессора
 // import { send as sendToTcp } from './senders/tcp/send.mjs';
 // command_watcher(
 // 	{
 // 		command: 'bash',
 // 		args: ['test/test.sh'],
 // 		period: 3000,
-// 		header: 'Температура процессора превысила 65 градусов!',
+// 		subject: 'Температура процессора превысила 65 градусов!',
 // 		timeout: 10000,
 // 		pre: middlewares.parseRPItemp,
 // 		trigger: (t) => Number(t) >= 65,
@@ -150,13 +242,13 @@ command_watcher(
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-main.html">main</a></li><li><a href="module-senders_tcp.html">senders/tcp</a></li><li><a href="module-senders_telegram.html">senders/telegram</a></li><li><a href="module-watchers_command_watcher.html">watchers/command_watcher</a></li><li><a href="module-watchers_file_watcher.html">watchers/file_watcher</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-senders_email.html">senders/email</a></li><li><a href="module-senders_tcp.html">senders/tcp</a></li><li><a href="module-senders_telegram.html">senders/telegram</a></li><li><a href="module-watchers_command_watcher.html">watchers/command_watcher</a></li><li><a href="module-watchers_file_watcher.html">watchers/file_watcher</a></li></ul><h3>Global</h3><ul><li><a href="global.html#senders">senders</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Nov 17 2023 11:55:21 GMT+0300 (Москва, стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.11</a> on Mon Mar 16 2026 14:06:05 GMT+0300 (Москва, стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

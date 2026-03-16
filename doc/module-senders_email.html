@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Module: senders/tcp</title>
+    <title>JSDoc: Module: senders/email</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Module: senders/tcp</h1>
+    <h1 class="page-title">Module: senders/email</h1>
 
     
 
@@ -38,7 +38,7 @@
     <div class="container-overview">
     
         
-            <div class="description">Модуль отправки сообщений на TCP сервер. При этом соединение не закрывается после каждой отправки.</div>
+            <div class="description">Модуль отправки сообщений в телеграм</div>
         
 
         
@@ -87,7 +87,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="senders_tcp_send.mjs.html">senders/tcp/send.mjs</a>, <a href="senders_tcp_send.mjs.html#line7">line 7</a>
+        <a href="senders_email_send.mjs.html">senders/email/send.mjs</a>, <a href="senders_email_send.mjs.html#line10">line 10</a>
     </li></ul></dd>
     
 
@@ -144,7 +144,7 @@
 
 
 <div class="description">
-    В эту переменную считываются значения bot token и chat_id из файла credentials.json
+    В эту переменную считываются значения логина и пароля из файла credentials.json
 Шаблон credentials.json представлен в credentials.template.json
 </div>
 
@@ -190,7 +190,7 @@
 
         <tr>
             
-                <td class="name"><code>address</code></td>
+                <td class="name"><code>login</code></td>
             
 
             <td class="type">
@@ -206,14 +206,14 @@
 
             
 
-            <td class="description last">Сетевой адрес TCP сервера.</td>
+            <td class="description last">Логин на SMTP сервер.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>port</code></td>
+                <td class="name"><code>password</code></td>
             
 
             <td class="type">
@@ -229,7 +229,30 @@
 
             
 
-            <td class="description last">Порт.</td>
+            <td class="description last">Пароль от SMTP сервера.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>to</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Кому посылать сообщение</td>
         </tr>
 
     
@@ -268,7 +291,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="senders_tcp_send.mjs.html">senders/tcp/send.mjs</a>, <a href="senders_tcp_send.mjs.html#line22">line 22</a>
+        <a href="senders_email_send.mjs.html">senders/email/send.mjs</a>, <a href="senders_email_send.mjs.html#line23">line 23</a>
     </li></ul></dd>
     
 
@@ -304,7 +327,7 @@
 
 
 <div class="description">
-    Функция для отправки сообщений отправки сообщений на TCP сервер. Поднять сервер для приёма сообщений на порту 8080 можно простой командой "nc -lp 8080".
+    Отправляет заданное сообщение на электронную почту.
 </div>
 
 
@@ -356,7 +379,7 @@
 
             
 
-            <td class="description last">Заголовок собщения</td>
+            <td class="description last">Тема письма</td>
         </tr>
 
     
@@ -379,7 +402,7 @@
 
             
 
-            <td class="description last">Текст сообщения</td>
+            <td class="description last">Текст письма</td>
         </tr>
 
     
@@ -420,7 +443,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="senders_tcp_send.mjs.html">senders/tcp/send.mjs</a>, <a href="senders_tcp_send.mjs.html#line30">line 30</a>
+        <a href="senders_email_send.mjs.html">senders/email/send.mjs</a>, <a href="senders_email_send.mjs.html#line41">line 41</a>
     </li></ul></dd>
     
 

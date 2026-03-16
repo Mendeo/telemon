@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: senders/tcp/send.mjs</title>
+    <title>JSDoc: Source: senders/email/send.mjs</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: senders/tcp/send.mjs</h1>
+    <h1 class="page-title">Source: senders/email/send.mjs</h1>
 
     
 
@@ -30,50 +30,61 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'url';
-import * as net from 'node:net';
-
-/**
- * Модуль отправки сообщений на TCP сервер. При этом соединение не закрывается после каждой отправки.
- * @module senders/tcp
- * @exports send
-*/
+import * as nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/** В эту переменную считываются значения bot token и chat_id из файла credentials.json
+/**
+ * Модуль отправки сообщений в телеграм
+ * @module senders/email
+ * @exports send
+*/
+
+/** В эту переменную считываются значения логина и пароля из файла credentials.json
  * Шаблон credentials.json представлен в credentials.template.json
  * @type {Object}
- * @property {string} address - Сетевой адрес TCP сервера.
- * @property {string} port - Порт.
+ * @property {string} login - Логин на SMTP сервер.
+ * @property {string} password - Пароль от SMTP сервера.
+ * @property {string} to - Кому посылать сообщение
 */
 const credentials = JSON.parse(fs.readFileSync(path.join(__dirname, 'credentials.json')).toString());
+const transporter = nodemailer.createTransport(
+	{
+		host: credentials.smtp,
+		port: credentials.port,
+		secure: true,
+		auth:
+		{
+			user: credentials.login,
+			pass: credentials.password,
+		},
+	});
 
-let client = null;
 /**
- * Функция для отправки сообщений отправки сообщений на TCP сервер. Поднять сервер для приёма сообщений на порту 8080 можно простой командой "nc -lp 8080".
- * @param {string} subject - Заголовок собщения
- * @param {string} msg - Текст сообщения
+ * Отправляет заданное сообщение на электронную почту.
+ * @param {string} subject - Тема письма
+ * @param {string} msg - Текст письма
  */
 export function send(subject, msg)
 {
-	const full_msg = (subject ? subject + '\n' : '') + msg + '\n*******\n';
-	if (!client)
+	const mailDetails =
 	{
-		client = new net.Socket();
-		client.connect(credentials.port, credentials.address);
-		client.on('connect', () =>
-		{
-			client.write(full_msg);
-		});
-		client.on('error', (e) => console.log('Message sending failed ' + e));
-		client.on('close', () => console.log('Connection closed'));
-	}
-	else
+		from: credentials.from,
+		to: credentials.to,
+		subject,
+		text: msg,
+	};
+	transporter.sendMail(mailDetails).then((info)=>
 	{
-		client.write(full_msg);
-	}
-}</code></pre>
+		console.log(`The message ${info.messageId} was sent successfully to e-mail`);
+	},
+	(err) =>
+	{
+		console.log(`Error while sending to e-mail:\n${err}`);
+	});
+}
+</code></pre>
         </article>
     </section>
 
