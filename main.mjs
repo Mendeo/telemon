@@ -15,7 +15,7 @@ const senders = [sendToEmail];
 
 //Приём событий от контроллера сети питания. Он отсылает данные по TCP.
 tcp_watcher({
-	subject: 'UPS watcher: ',
+	subject: 'Внешнее событие: ',
 	port: 10001,
 }, senders);
 
