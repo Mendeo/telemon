@@ -10,7 +10,7 @@ import { event as command_watcher } from './watchers/command_watcher.mjs';
  * Мониторинг сервера на Node.js.
  */
 
-const senders = [sendToMyTelegram, sendToEmail];
+const senders = [sendToEmail];
 
 {
 	command_watcher({
