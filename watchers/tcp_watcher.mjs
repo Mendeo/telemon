@@ -1,6 +1,5 @@
 'use strict';
 import * as net from 'node:net';
-import { runInNewContext } from 'node:vm';
 /**
  * Модуль для работы сторонних вотчеров. Они передают информацию на открытый tcp порт на локалхосте.
  * Данный модуль не проверяет отличается ли информация, полученная в прошлый раз от полученной только что, а просто пересылает полученный текст в сендеры.
@@ -44,46 +43,23 @@ export function event(input, callbacks)
 		{
 			sendToSenders(callbacks, 'Error while tcp watcher', err);
 		});
-
-		// Обработка отключения клиента
 		socket.on('end', () =>
 		{
 			const [subject, msg] = getSubjectAndOther(data);
-			sendToSenders(callbacks, subject, msg);
+			sendToSenders(callbacks, (input.subject ? input.subject + '\n' : '') + subject, msg);
 		});
-
-		// Таймаут для сокета (опционально)
-		socket.setTimeout(10000); // 60 секунд
+		socket.setTimeout(10000);
 		socket.on('timeout', () =>
 		{
 			console.log('tcp_watcher: connection timeout.');
 			socket.end();
 		});
 	});
-
-	// Обработка ошибок сервера
 	server.on('error', (err) =>
 	{
 		console.log('tcp_watcher: Server error', err.message);
 	});
-
-	// Запускаем сервер на порту 9873
-	const PORT = 9873;
-	server.listen(PORT, () => {
-		console.log(`TCP сервер запущен на порту ${PORT}`);
-		console.log('Ожидание подключений...');
-	});
-
-	// Обработка сигналов завершения (Ctrl+C)
-	process.on('SIGINT', () => {
-		console.log('\nЗавершение работы сервера...');
-		server.close(() => {
-			console.log('Сервер остановлен');
-			process.exit(0);
-		});
-	});
-
-
+	server.listen(input.port);
 }
 
 function getSubjectAndOther(text)
