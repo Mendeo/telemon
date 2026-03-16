@@ -46,7 +46,7 @@ export function event(input, callbacks)
 		socket.on('end', () =>
 		{
 			const [subject, msg] = getSubjectAndOther(data);
-			sendToSenders(callbacks, (input.subject ? input.subject + '\n' : '') + subject, msg);
+			sendToSenders(callbacks, (input.subject ? input.subject : '') + subject, msg);
 		});
 		socket.setTimeout(10000);
 		socket.on('timeout', () =>

@@ -1,7 +1,7 @@
 'use strict';
 import * as middlewares from './middlewares.mjs';
 import { testSmart } from './triggers.mjs';
-import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
+//import { send as sendToMyTelegram } from './senders/telegram/send.mjs';
 import { send as sendToEmail } from './senders/email/send.mjs';
 import { event as file_watcher } from './watchers/file_watcher.mjs';
 import { event as command_watcher } from './watchers/command_watcher.mjs';
@@ -11,7 +11,7 @@ import { event as tcp_watcher } from './watchers/tcp_watcher.mjs';
  * Мониторинг сервера на Node.js.
  */
 
-const senders = [sendToMyTelegram];
+const senders = [sendToEmail];
 
 //Приём событий от контроллера сети питания. Он отсылает данные по TCP.
 tcp_watcher({
