@@ -23,7 +23,7 @@ tcp_watcher({
 command_watcher({
 	period: 0, //Однократный запуск команды
 	command: 'fastfetch',
-	args: ['--logo', 'none', '--pipe'], //'--structure-disabled', 'Colors' Добавить потом
+	args: ['--logo', 'none', '--pipe', '--structure-disabled', 'Colors'],
 	subject: 'Сервер включился!'
 }, senders);
 
