@@ -2,9 +2,10 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
-    "globals": "^17.4.0"
+    "globals": "^17.7.0"
   },
   "dependencies": {
-    "nodemailer": "^8.0.2"
+    "nodemailer": "^9.0.3",
+    "npm": "^11.18.0"
   }
 }
